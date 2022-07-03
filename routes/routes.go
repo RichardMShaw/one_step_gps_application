@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/RichardMShaw/one_step_gps_device_project/client"
+	"github.com/RichardMShaw/one_step_gps_application/client"
 	"github.com/go-chi/chi/v5"
 )
 
