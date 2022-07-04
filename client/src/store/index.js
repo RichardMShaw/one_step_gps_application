@@ -7,7 +7,11 @@ export default createStore({
     getDevicesTimeout: null,
     devices: [],
   },
-  getters: {},
+  getters: {
+    devices(state) {
+      return state.devices
+    },
+  },
   mutations: {
     setDevices(state, value) {
       state.devices = value
@@ -22,14 +26,14 @@ export default createStore({
   actions: {
     getDevices({ commit }) {
       getDevices().then(({ data }) => {
-        commit('setDevices', data)
+        commit('setDevices', data.result_list)
       })
     },
     startGetDevicesTimeout({ commit }) {
       const updateFunc = () => {
         getDevices()
           .then(({ data }) => {
-            commit('setDevices', data)
+            commit('setDevices', data.result_list)
             commit('setGetDevicesTimeout', setTimeout(updateFunc, 20000))
           })
           .catch((err) => {
