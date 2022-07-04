@@ -16,6 +16,8 @@
         "vue"
     ],
     "rules": {
-        "comma-dangle":"off"
+        "comma-dangle":"off",
+        "space-before-function-paren":"off",
+        "no-trailing-spaces":"off"
     }
 }
