@@ -14,7 +14,7 @@ import (
 func Router() http.Handler {
 	mux := chi.NewMux()
 	mux.Use(middleware.Recoverer)
-	mux.HandleFunc("/", indexHandler)
+	mux.HandleFunc("/*", indexHandler)
 
 	staticFS, _ := fs.Sub(client.StaticFiles, "dist")
 	httpFS := http.FileServer(http.FS(staticFS))
@@ -35,7 +35,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-
 	if r.URL.Path == "/favicon.ico" {
 		rawFile, _ := client.StaticFiles.ReadFile("dist/favicon.ico")
 		w.Write(rawFile)

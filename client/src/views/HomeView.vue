@@ -8,7 +8,9 @@
 <script>
 // @ is an alias to /src
 import HelloWorld from '@/components/HelloWorld.vue'
+import DeviceAPI from '@/utils/deviceAPI'
 
+const { getDevices } = DeviceAPI
 export default {
   name: 'HomeView',
   components: {
@@ -16,7 +18,9 @@ export default {
   },
 
   mounted() {
-    
+    getDevices().then(({ data }) => {
+      console.log(data)
+    })
   },
 }
 </script>
