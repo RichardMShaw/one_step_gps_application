@@ -1,21 +1,15 @@
 <template>
-  <div class="flex-row">
-    <HelloWorld />
-  </div>
+  <hello-world />
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+  import HelloWorld from '../components/HelloWorld'
 
-export default {
-  name: 'HomeView',
-  components: {
-    HelloWorld,
-  },
+  export default {
+    name: 'Home',
 
-  mounted() {
-    this.$store.dispatch('startGetDevicesTimeout')
-  },
-}
+    components: {
+      HelloWorld,
+    },
+  }
 </script>

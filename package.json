@@ -16,5 +16,6 @@
   "bugs": {
     "url": "https://github.com/RichardMShaw/one_step_gps_application/issues"
   },
-  "homepage": "https://github.com/RichardMShaw/one_step_gps_application#readme"
+  "homepage": "https://github.com/RichardMShaw/one_step_gps_application#readme",
+  "dependencies": {}
 }

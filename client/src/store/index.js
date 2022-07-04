@@ -1,8 +1,11 @@
-import { createStore, storeKey } from 'vuex'
+import Vue from 'vue'
+import Vuex from 'vuex'
 import DeviceAPI from '@/utils/deviceAPI'
 const { getDevices } = DeviceAPI
 
-export default createStore({
+Vue.use(Vuex)
+
+export default new Vuex.Store({
   state: {
     getDevicesTimeout: null,
     devices: [],
