@@ -29,14 +29,14 @@ export default new Vuex.Store({
   actions: {
     getDevices({ commit }) {
       getDevices().then(({ data }) => {
-        commit('setDevices', data.result_list)
+        commit('setDevices', data)
       })
     },
     startGetDevicesTimeout({ commit }) {
       const updateFunc = () => {
         getDevices()
           .then(({ data }) => {
-            commit('setDevices', data.result_list)
+            commit('setDevices', data)
             commit('setGetDevicesTimeout', setTimeout(updateFunc, 20000))
           })
           .catch((err) => {

@@ -12,9 +12,15 @@ import (
 
 func deviceRoutes(mux *chi.Mux) {
 	key := os.Getenv("ONE_STEP_GPS_KEY")
-	deviceGetRoute := fmt.Sprintf("https://track.onestepgps.com/v3/api/public/device?latest_point=true&api-key=%s", key)
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodGet, "https://track.onestepgps.com/v3/api/public/device-info?state_detail=1", nil)
+	if err != nil {
+		fmt.Printf("Error : %s", err)
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", key))
+
 	mux.Get("/api/device", func(w http.ResponseWriter, r *http.Request) {
-		res, err := http.Get(deviceGetRoute)
+		res, err := client.Do(req)
 		if err != nil {
 			log.Println(err)
 			return

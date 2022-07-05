@@ -1,15 +1,19 @@
 <template>
-  <hello-world />
+  <device-page />
 </template>
 
 <script>
-  import HelloWorld from '../components/HelloWorld'
+import DevicePage from '../components/DevicePage.vue'
 
-  export default {
-    name: 'Home',
+export default {
+  name: 'HomeView',
 
-    components: {
-      HelloWorld,
-    },
-  }
+  components: {
+    DevicePage,
+  },
+
+  mounted() {
+    this.$store.dispatch('startGetDevicesTimeout')
+  },
+}
 </script>

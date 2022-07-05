@@ -4,7 +4,8 @@
   "description": "",
   "main": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --exec go run main.go --signal SIGTERM"
   },
   "repository": {
     "type": "git",
@@ -17,5 +18,7 @@
     "url": "https://github.com/RichardMShaw/one_step_gps_application/issues"
   },
   "homepage": "https://github.com/RichardMShaw/one_step_gps_application#readme",
-  "dependencies": {}
+  "dependencies": {
+    "nodemon": "^2.0.18"
+  }
 }
