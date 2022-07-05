@@ -1,14 +1,29 @@
 <template>
-  <v-container class="no-margin">
-    <v-row>
-      <device-table />
+  <v-container class="containter">
+    <v-row class="no-margin">
+      <v-navigation-drawer dark mini-variant mini-variant-width="56" permanent>
+        <v-list dense nav>
+          <v-list-item>
+            <v-list-item-action>
+              <v-icon @click.stop="device = !device">mdi-compass</v-icon>
+            </v-list-item-action>
+          </v-list-item>
+        </v-list>
+      </v-navigation-drawer>
+      <device-table v-if="device" />
     </v-row>
   </v-container>
 </template>
 
 <style scoped>
-.no-margin {
+.containter {
   margin: 0;
+  padding: 0;
+  height: 100%;
+}
+.row {
+  margin: 0;
+  height: 100%;
 }
 </style>
 <script>
@@ -18,6 +33,8 @@ export default {
   components: {
     DeviceTable,
   },
-  data: () => ({}),
+  data: () => ({
+    device: true,
+  }),
 }
 </script>

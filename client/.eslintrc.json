@@ -21,6 +21,7 @@
     "vue/v-slot-style": "off",
     "vue/valid-v-slot": "off",
     "vue/valid-template-root": "off",
-    "vue/no-v-text-v-html-on-component": "Off"
+    "vue/no-v-text-v-html-on-component": "Off",
+    "vue/no-parsing-error": "off"
   }
 }

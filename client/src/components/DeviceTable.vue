@@ -9,12 +9,32 @@
     class="elevation-1"
   >
     <template v-slot:top>
-      <v-tabs background-color="deep-purple accent-4" center-active dark>
-        <v-tab>All</v-tab>
-        <v-tab>Driving</v-tab>
-        <v-tab>Idle</v-tab>
-        <v-tab>Stopped</v-tab>
-      </v-tabs>
+      <div style="display: flex;">
+        <v-tabs :background-color="tabColor" center-active dark>
+          <v-tab @click="filterDevices('ALL')">
+            All ({{ device_status_count.ALL }})
+          </v-tab>
+          <v-tab @click="filterDevices('MOVING')">
+            Moving ({{ device_status_count.MOVING }})
+          </v-tab>
+          <v-tab @click="filterDevices('IDLE')">
+            Idle ({{ device_status_count.IDLE }})
+          </v-tab>
+          <v-tab @click="filterDevices('STOPPED')">
+            Stopped ({{ device_status_count.STOPPED }})
+          </v-tab>
+          <v-tab @click="filterDevices('NOSIGNAL')">
+            No Signal ({{ device_status_count.NOSIGNAL }})
+          </v-tab>
+          <v-spacer></v-spacer>
+          <v-btn height="100%" dark>
+            Layout
+            <v-icon right dark>
+              mdi-cog
+            </v-icon>
+          </v-btn>
+        </v-tabs>
+      </div>
     </template>
     <template v-slot:item.odometer_mi="{ item }">
       {{ convertToInt(item.odometer_mi) }}
@@ -29,10 +49,10 @@
       {{ convertToInt(item.speed_kph) }}
     </template>
     <template v-slot:item.drive_status="{ item }">
-      {{ item.drive_status.toUpperCase() }}
+      {{ item.drive_status_display }}
     </template>
-    <template v-slot:item.drive_status_duration_s="{ item }">
-      {{ convertToTime(item.drive_status_duration_s) }}
+    <template v-slot:item.drive_status_duration="{ item }">
+      {{ item.drive_status_duration_display }}
     </template>
     <template v-slot:item.active_state="{ item }">
       <v-icon :color="getActiveStateColor(item.active_state)">
@@ -54,6 +74,13 @@ export default {
   },
   data: () => ({
     expanded: [],
+    tabColors: {
+      ALL: 'blue-grey darken-4',
+      MOVING: 'teal darken-4',
+      IDLE: 'blue darken-4',
+      STOPPED: 'red darken-4',
+      NOSIGNAL: 'grey darken-4',
+    },
     headers: [
       {
         text: 'Name',
@@ -93,7 +120,7 @@ export default {
       {
         text: 'Status Duration',
         align: 'left',
-        value: 'drive_status_duration_s',
+        value: 'drive_status_duration',
       },
       {
         text: 'Active',
@@ -103,6 +130,9 @@ export default {
     ],
   }),
   methods: {
+    filterDevices(status) {
+      this.$store.commit('setDeviceStatusFilter', status)
+    },
     expand(value) {
       if (this.expanded[0] == value) {
         this.expanded = []
@@ -111,7 +141,6 @@ export default {
       this.expanded = [value]
     },
     convertToTime(value) {
-      console.log(value)
       let totalSeconds = value
 
       let days = Math.floor(totalSeconds / (24 * 3600))
@@ -134,6 +163,9 @@ export default {
       return timeString.trim()
     },
     convertToInt(value) {
+      if (isNaN(value)) {
+        return 'UNKNOWN'
+      }
       return Math.floor(value)
     },
     getActiveStateIcon(value) {
@@ -156,7 +188,28 @@ export default {
   },
   computed: {
     devices() {
+      return this.$store.getters.devicesStatusFiltered
+    },
+    statusFilter() {
+      return this.$store.getters.deviceStatusFilter
+    },
+    unfilteredDevices() {
       return this.$store.getters.devices
+    },
+    tabColor() {
+      if (!this.statusFilter) {
+        return this.tabColors['ALL']
+      }
+      return this.tabColors[this.statusFilter]
+    },
+    device_status_count() {
+      let list = this.unfilteredDevices
+      let count = { ALL: 0, MOVING: 0, IDLE: 0, STOPPED: 0, NOSIGNAL: 0 }
+      list.forEach((item) => {
+        count['ALL']++
+        count[item.drive_status]++
+      })
+      return count
     },
   },
 }
