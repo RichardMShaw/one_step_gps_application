@@ -88,9 +88,9 @@ class Device {
           this.drive_status_duration_display = convertSecondsToTime(seconds)
         } else {
           let drive_status = device_state.drive_status.toUpperCase()
+          drive_status = drive_status == 'OFF' ? 'STOPPED' : drive_status
           this.drive_status = drive_status
-          this.drive_status_display =
-            drive_status == 'OFF' ? 'STOPPED' : drive_status
+          this.drive_status_display = drive_status
           let seconds = device_state.drive_status_duration.value
           this.drive_status_duration = seconds
           this.drive_status_duration_display = convertSecondsToTime(seconds)
