@@ -8,11 +8,15 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    mapTypeId: 'terrain',
     getDevicesTimeout: null,
     deviceStatusFilter: 'ALL',
     devices: [],
   },
   getters: {
+    mapTypeId(state) {
+      return state.mapTypeId
+    },
     devices(state) {
       return state.devices
     },
@@ -56,7 +60,6 @@ export default new Vuex.Store({
               let device = new Device(item)
               devices.push(device)
             })
-            console.log(devices)
             commit('setDevices', devices)
             commit('setGetDevicesTimeout', setTimeout(updateFunc, 20000))
           })

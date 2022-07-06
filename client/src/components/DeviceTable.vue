@@ -14,8 +14,8 @@
           <v-tab @click="filterDevices('ALL')">
             All ({{ device_status_count.ALL }})
           </v-tab>
-          <v-tab @click="filterDevices('MOVING')">
-            Moving ({{ device_status_count.MOVING }})
+          <v-tab @click="filterDevices('DRIVING')">
+            Driving ({{ device_status_count.DRIVING }})
           </v-tab>
           <v-tab @click="filterDevices('IDLE')">
             Idle ({{ device_status_count.IDLE }})
@@ -76,7 +76,7 @@ export default {
     expanded: [],
     tabColors: {
       ALL: 'blue-grey darken-4',
-      MOVING: 'teal darken-4',
+      DRIVING: 'teal darken-4',
       IDLE: 'blue darken-4',
       STOPPED: 'red darken-4',
       NOSIGNAL: 'grey darken-4',
@@ -204,7 +204,7 @@ export default {
     },
     device_status_count() {
       let list = this.unfilteredDevices
-      let count = { ALL: 0, MOVING: 0, IDLE: 0, STOPPED: 0, NOSIGNAL: 0 }
+      let count = { ALL: 0, DRIVING: 0, IDLE: 0, STOPPED: 0, NOSIGNAL: 0 }
       list.forEach((item) => {
         count['ALL']++
         count[item.drive_status]++
