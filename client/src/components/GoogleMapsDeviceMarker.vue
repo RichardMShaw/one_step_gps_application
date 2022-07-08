@@ -98,10 +98,13 @@ export default {
     setTimeout(() => {
       let elem = document.getElementById(`${this.id}_info_id`)
       if (elem) {
+        let parent = elem.parentElement.parentElement.parentElement
+        let removeBtn = parent.children[1]
+        parent.removeChild(removeBtn)
         let realInfo = document.getElementById(`${this.id}_info_window`)
         elem.append(realInfo)
       }
-    }, 1000 / 30)
+    }, 1000 / 15)
   },
 
   beforeDestroy() {
