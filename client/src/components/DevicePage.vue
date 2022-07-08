@@ -11,7 +11,8 @@
         </v-list>
       </v-navigation-drawer>
       <device-table v-if="device" />
-      <device-map class="map" v-if="showMap" :devices="devices" />
+      <device-map class="map" v-if="showMap" :devices="shownDevices" />
+      <layout-model v-if="layoutModel" :z-index="0" />
     </v-row>
   </v-container>
 </template>
@@ -34,11 +35,13 @@
 <script>
 import DeviceTable from './DeviceTable.vue'
 import DeviceMap from './DeviceMap.vue'
+import LayoutModel from './LayoutModel.vue'
 export default {
   name: 'DevicePage',
   components: {
     DeviceTable,
     DeviceMap,
+    LayoutModel,
   },
   data: () => ({
     device: true,
@@ -47,6 +50,12 @@ export default {
   computed: {
     devices() {
       return this.$store.getters.devicesStatusFiltered
+    },
+    shownDevices() {
+      return this.devices.filter((item) => item.show)
+    },
+    layoutModel() {
+      return this.$store.getters.layoutModel
     },
   },
   watch: {

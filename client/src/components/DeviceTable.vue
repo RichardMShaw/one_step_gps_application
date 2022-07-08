@@ -7,10 +7,12 @@
     item-key="device_id"
     hide-default-footer
     class="elevation-1"
+    :item-class="itemRowBackground"
   >
     <template v-slot:top>
       <div style="display: flex;">
-        <v-tabs :background-color="tabColor" center-active dark>
+        <v-tabs :background-color="tabColor" center-active dark show-arrows>
+          <v-tabs-slider color="yellow"></v-tabs-slider>
           <v-tab @click="filterDevices('ALL')">
             All ({{ device_status_count.ALL }})
           </v-tab>
@@ -27,7 +29,7 @@
             No Signal ({{ device_status_count.NOSIGNAL }})
           </v-tab>
           <v-spacer></v-spacer>
-          <v-btn height="100%" dark>
+          <v-btn height="100%" dark @click="$store.dispatch('showLayoutModel')">
             Layout
             <v-icon right dark>
               mdi-cog
@@ -36,11 +38,24 @@
         </v-tabs>
       </div>
     </template>
+    <template v-slot:header.show>
+      <v-icon @click="setHiddenDevices">{{ eyeIcon }}</v-icon>
+    </template>
+    <template v-slot:item.show="{ item }">
+      <td class="show-icon-td">
+        <v-simple-checkbox
+          v-model="item.show"
+          @click="changeHiddenDevice(item)"
+          v-ripple
+          color="blue"
+        ></v-simple-checkbox>
+      </td>
+    </template>
     <template v-slot:item.odometer_mi="{ item }">
-      {{ convertToInt(item.odometer_mi) }}
+      {{ item.odometer_mi_display }}
     </template>
     <template v-slot:item.odometer_km="{ item }">
-      {{ convertToInt(item.odometer_km) }}
+      {{ item.odometer_km_display }}
     </template>
     <template v-slot:item.speed_mph="{ item }">
       {{ convertToInt(item.speed_mph) }}
@@ -59,11 +74,42 @@
         {{ getActiveStateIcon(item.active_state) }}
       </v-icon>
     </template>
+    <template v-slot:item.rssi="{ item }">
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-icon :color="getSignalColor(item.online)" v-bind="attrs" v-on="on">
+            {{ getSignalIcon(item) }}
+          </v-icon>
+        </template>
+        <span>{{ getSignalInfo(item) }}</span>
+      </v-tooltip>
+    </template>
     <template v-slot:expanded-item="{ item }">
-      <device-table-expanded-item :item="item" />
+      <td style="padding: 0;" :colspan="headers.length">
+        <device-table-expanded-item :item="item" />
+      </td>
     </template>
   </v-data-table>
 </template>
+
+<style>
+.driving-row {
+  background-color: #80cbc4 !important;
+}
+.idle-row {
+  background-color: #90caf9 !important;
+}
+.stopped-row {
+  background-color: #ef9a9a !important;
+}
+.nosignal-row {
+  background-color: #b0bec5 !important;
+}
+.show-icon-td {
+  background-color: white;
+  border-right: rgb(56, 56, 56);
+}
+</style>
 
 <script>
 import DeviceTableExpandedItem from './DeviceTableExpandedItem.vue'
@@ -81,55 +127,36 @@ export default {
       STOPPED: 'red darken-4',
       NOSIGNAL: 'grey darken-4',
     },
-    headers: [
-      {
-        text: 'Name',
-        align: 'start',
-        value: 'display_name',
-      },
-      {
-        text: 'Model',
-        align: 'left',
-        value: 'model',
-      },
-      {
-        text: 'Odometer (mi)',
-        align: 'right',
-        value: 'odometer_mi',
-      },
-      {
-        text: 'Odometer (km)',
-        align: 'right',
-        value: 'odometer_km',
-      },
-      {
-        text: 'mph',
-        align: 'right',
-        value: 'speed_mph',
-      },
-      {
-        text: 'kph',
-        align: 'right',
-        value: 'speed_kph',
-      },
-      {
-        text: 'Drive Status',
-        align: 'center',
-        value: 'drive_status',
-      },
-      {
-        text: 'Status Duration',
-        align: 'left',
-        value: 'drive_status_duration',
-      },
-      {
-        text: 'Active',
-        align: 'center',
-        value: 'active_state',
-      },
-    ],
   }),
   methods: {
+    setHiddenDevices() {
+      if (this.noHiddenDevices) {
+        this.$store.commit('setHiddenDevices', {
+          devices: this.devices,
+          value: true,
+        })
+      } else {
+        this.$store.commit('setHiddenDevices', {
+          devices: this.devices,
+          value: false,
+        })
+      }
+    },
+    changeHiddenDevice(item) {
+      this.$store.commit('changeHiddenDevice', item)
+    },
+    itemRowBackground(item) {
+      switch (item.drive_status) {
+        case 'DRIVING':
+          return 'driving-row'
+        case 'IDLE':
+          return 'idle-row'
+        case 'STOPPED':
+          return 'stopped-row'
+        default:
+          return 'nosignal-row'
+      }
+    },
     filterDevices(status) {
       this.$store.commit('setDeviceStatusFilter', status)
     },
@@ -140,33 +167,52 @@ export default {
       }
       this.expanded = [value]
     },
-    convertToTime(value) {
-      let totalSeconds = value
-
-      let days = Math.floor(totalSeconds / (24 * 3600))
-      totalSeconds %= 24 * 3600
-
-      let hours = Math.floor(totalSeconds / 3600)
-      totalSeconds %= 3600
-
-      let minutes = Math.floor(totalSeconds / 60)
-      totalSeconds %= 60
-
-      let seconds = totalSeconds
-
-      let secondsString = seconds ? `${seconds} s` : ''
-      let minutesString = minutes ? `${minutes} m` : ''
-      let hoursString = hours ? `${hours} h` : ''
-      let daysString = days ? `${days} d` : ''
-
-      let timeString = `${daysString} ${hoursString} ${minutesString} ${secondsString}`
-      return timeString.trim()
-    },
     convertToInt(value) {
       if (isNaN(value)) {
         return 'UNKNOWN'
       }
       return Math.floor(value)
+    },
+    getSignalIcon(item) {
+      if (!item.online) {
+        return 'mdi-wifi-strength-off'
+      }
+      const rssi = item.rssi
+      switch (true) {
+        case rssi < -120:
+          return 'mdi-wifi-strength-1'
+        case rssi < -105:
+          return 'mdi-wifi-strength-2'
+        case rssi < -90:
+          return 'mdi-wifi-strength-3'
+        default:
+          return 'mdi-wifi-strength-4'
+      }
+    },
+    getSignalColor(value) {
+      return value ? '#388E3C' : 'grey darken-4'
+    },
+    getSignalInfo(item) {
+      if (!item.online) {
+        return 'Connection: No'
+      }
+      let rssiQuality = ''
+      const rssi = item.rssi
+      switch (true) {
+        case rssi < -120:
+          rssiQuality = 'Weak'
+          break
+        case rssi < -105:
+          rssiQuality = 'Fair'
+          break
+        case rssi < -90:
+          rssiQuality = 'Good'
+          break
+        default:
+          rssiQuality = 'Excellent'
+          break
+      }
+      return `Connection: Yes, RSSI: ${rssi} ${rssiQuality}`
     },
     getActiveStateIcon(value) {
       if (value == 'active') {
@@ -187,8 +233,29 @@ export default {
     },
   },
   computed: {
+    headers() {
+      return this.$store.getters.deviceHeadersFiltered
+    },
     devices() {
       return this.$store.getters.devicesStatusFiltered
+    },
+    noHiddenDevices() {
+      let len = this.devices.length
+      if (len < 1) {
+        return true
+      }
+      for (let i = 0; i < len; i++) {
+        if (this.devices[i].show) {
+          return true
+        }
+      }
+      return false
+    },
+    eyeIcon() {
+      if (this.noHiddenDevices) {
+        return 'mdi-eye'
+      }
+      return 'mdi-eye-off'
     },
     statusFilter() {
       return this.$store.getters.deviceStatusFilter
@@ -212,5 +279,6 @@ export default {
       return count
     },
   },
+  watch: {},
 }
 </script>

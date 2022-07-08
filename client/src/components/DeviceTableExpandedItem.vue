@@ -1,23 +1,25 @@
 <template>
-  <v-simple-table>
-    <template v-slot:default>
-      <tbody>
-        <tr v-if="battery">
-          <td class="key-text">Battery</td>
-          <td>{{ battery }}</td>
-        </tr>
-      </tbody>
-    </template>
+  <v-simple-table dense>
+    <tbody>
+      <tr v-for="header in headers" :key="header.text">
+        <td class="key-text table-data">{{ header.text }}</td>
+        <td>{{ item[header.value] }}</td>
+      </tr>
+    </tbody>
   </v-simple-table>
 </template>
 
 <style scoped>
+.table-data {
+  flex-grow: 1;
+}
 .key-text {
   font-weight: bold;
 }
 </style>
 
 <script>
+import { ALL_DEVICE_HEADERS_ALPHABETICAL } from '@/constants/deviceHeaders'
 export default {
   name: 'DeviceTableExpandedItem',
   props: {
@@ -26,19 +28,8 @@ export default {
   data: () => ({}),
   methods: {},
   computed: {
-    battery() {
-      return this.item.external_volt
-    },
-    lat() {
-      return this.item.lat
-    },
-    lng() {
-      return this.item.lng
-    },
-    position() {
-      let truncLat = Math.floor(this.lat * 1000000) / 1000000
-      let truncLng = Math.floor(this.lng * 1000000) / 1000000
-      return `${truncLat}°,${truncLng}°`
+    headers() {
+      return ALL_DEVICE_HEADERS_ALPHABETICAL
     },
   },
 }

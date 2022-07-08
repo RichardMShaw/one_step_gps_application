@@ -47,11 +47,17 @@ export default {
       }
     },
     mapCenter() {
+      let latLng = { lat: 0, lng: 0 }
       if (!this.devices.length) {
-        return { lat: 0, lng: 0 }
+        return latLng
       }
-      let device = this.devices[0]
-      return { lat: device.lat, lng: device.lng }
+      this.devices.forEach((item) => {
+        latLng.lat += item.lat
+        latLng.lng += item.lng
+      })
+      latLng.lat /= this.devices.length
+      latLng.lng /= this.devices.length
+      return latLng
     },
   },
 }
