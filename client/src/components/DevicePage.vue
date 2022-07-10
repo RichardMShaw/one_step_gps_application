@@ -13,6 +13,7 @@
       <device-table v-if="device" />
       <device-map class="map" v-if="showMap" :devices="shownDevices" />
       <layout-model v-if="layoutModel" :z-index="0" />
+      <device-icon-model v-if="deviceIconModel.show" :z-index="0" />
     </v-row>
   </v-container>
 </template>
@@ -36,12 +37,14 @@
 import DeviceTable from './DeviceTable.vue'
 import DeviceMap from './DeviceMap.vue'
 import LayoutModel from './LayoutModel.vue'
+import DeviceIconModel from './DeviceIconModal.vue'
 export default {
   name: 'DevicePage',
   components: {
     DeviceTable,
     DeviceMap,
     LayoutModel,
+    DeviceIconModel,
   },
   data: () => ({
     device: true,
@@ -56,6 +59,9 @@ export default {
     },
     layoutModel() {
       return this.$store.getters.layoutModel
+    },
+    deviceIconModel() {
+      return this.$store.getters.deviceIconModel
     },
   },
   watch: {

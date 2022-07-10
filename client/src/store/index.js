@@ -18,6 +18,7 @@ export default new Vuex.Store({
     devices: [],
     hiddenDevices: {},
     layoutModel: false,
+    deviceIconModel: { device: null, show: false },
     deviceHeaderSettings: JSON.parse(
       JSON.stringify(DEFAULT_DEVICE_HEADER_SETTINGS),
     ),
@@ -52,6 +53,9 @@ export default new Vuex.Store({
       return ALL_DEVICE_HEADERS.filter(
         (item) => state.deviceHeaderSettings[item.value],
       )
+    },
+    deviceIconModel(state) {
+      return state.deviceIconModel
     },
   },
   mutations: {
@@ -94,8 +98,18 @@ export default new Vuex.Store({
     setDeviceHeaderSettings(state, value) {
       state.deviceHeaderSettings = value
     },
+    setDeviceIconModal(state, value) {
+      state.deviceIconModel = value
+    },
   },
   actions: {
+    closeDeviceIconModal({ commit }) {
+      commit('setDeviceIconModal', { device: null, show: false })
+    },
+    showDeviceIconModal({ commit }, value) {
+      console.log(value)
+      commit('setDeviceIconModal', { device: value, show: true })
+    },
     changeDeviceHeaderSetting({ commit }, value) {
       commit('changeDeviceHeaderSetting', value)
     },

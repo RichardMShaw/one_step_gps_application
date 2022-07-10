@@ -54,22 +54,21 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		}
 		defer file.Close()
 
-		client := app.MongoClient
-
 		ext := filepath.Ext(handler.Filename)
-
 		switch ext {
 
-		case "jpg":
+		case ".jpg":
 			w.Header().Set("Content-Type", "image/jpeg")
-		case "jpeg":
+		case ".jpeg":
 			w.Header().Set("Content-Type", "image/jpeg")
-		case "png":
+		case ".png":
 			w.Header().Set("Content-Type", "image/png")
 		default:
 			http.Error(w, "Invalid image type", http.StatusBadRequest)
 			return
 		}
+
+		client := app.MongoClient
 
 		file_id := db.UploadFile(client, file, handler.Filename, "onestepgps")
 		device_id := r.FormValue("device_id")
@@ -89,6 +88,7 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		if err == nil {
 			db.DeleteFile(client, item.FileID, "onestepgps")
 		} else {
+			fmt.Println(deviceIcon)
 			collection.InsertOne(ctx, deviceIcon)
 		}
 	})

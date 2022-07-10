@@ -28,15 +28,23 @@
       <div class="text-center" style="padding-top: 0.5rem;">
         <v-btn
           class="white--text model-button"
-          color="teal"
+          color="light-blue"
           @click="revertToDefault"
         >
           Default
         </v-btn>
-        <v-btn class="white--text model-button" color="teal" @click="save">
+        <v-btn
+          class="white--text model-button"
+          color="light-blue"
+          @click="save"
+        >
           Save
         </v-btn>
-        <v-btn class="white--text model-button" color="teal" @click="close">
+        <v-btn
+          class="white--text model-button"
+          color="light-blue"
+          @click="close"
+        >
           Close
         </v-btn>
       </div>
@@ -67,10 +75,7 @@
 </style>
 
 <script>
-import {
-  ALL_DEVICE_HEADERS,
-  DEFAULT_DEVICE_HEADER_SETTINGS,
-} from '@/constants/deviceHeaders'
+import { ALL_DEVICE_HEADERS } from '@/constants/deviceHeaders'
 export default {
   name: 'LayoutModel',
   props: ['zIndex'],

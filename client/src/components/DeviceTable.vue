@@ -52,7 +52,7 @@
       </td>
     </template>
     <template v-slot:item.icon="{ item }">
-      <v-avatar>
+      <v-avatar @click.stop="changeIcon(item)">
         <img
           v-if="!showDefaultIcon"
           :src="`${root}/api/device-icon/${item.device_id}/${user_id}`"
@@ -138,10 +138,11 @@ export default {
     },
     showDefaultIcon: false,
   }),
-  mounted() {
-    console.log(process.env)
-  },
+  mounted() {},
   methods: {
+    changeIcon(item) {
+      this.$store.dispatch('showDeviceIconModal', item)
+    },
     setHiddenDevices() {
       if (this.noHiddenDevices) {
         this.$store.commit('setHiddenDevices', {
