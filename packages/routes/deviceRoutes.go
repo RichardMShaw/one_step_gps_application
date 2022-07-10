@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/RichardMShaw/one_step_gps_application/packages/app_config"
 	"github.com/go-chi/chi/v5"
 )
 
-func deviceRoutes(mux *chi.Mux) {
+func deviceRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	key := os.Getenv("ONE_STEP_GPS_KEY")
 	client := &http.Client{}
 	req, err := http.NewRequest(http.MethodGet, "https://track.onestepgps.com/v3/api/public/device?latest_point=true", nil)

@@ -7,11 +7,12 @@ import (
 	"strings"
 
 	"github.com/RichardMShaw/one_step_gps_application/client"
+	"github.com/RichardMShaw/one_step_gps_application/packages/app_config"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func Router() http.Handler {
+func Router(app *app_config.AppConfig) http.Handler {
 	mux := chi.NewMux()
 	mux.Use(middleware.Recoverer)
 	mux.HandleFunc("/*", indexHandler)
@@ -20,8 +21,10 @@ func Router() http.Handler {
 	httpFS := http.FileServer(http.FS(staticFS))
 	mux.Handle("/static/*", httpFS)
 
-	deviceRoutes(mux)
+	deviceRoutes(mux, app)
+	deviceIconRoutes(mux, app)
 	return mux
+
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
