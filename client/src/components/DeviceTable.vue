@@ -51,6 +51,14 @@
         ></v-simple-checkbox>
       </td>
     </template>
+    <template v-slot:item.icon="{ item }">
+      <v-avatar>
+        <img
+          v-if="!showDefaultIcon"
+          :src="`${root}/api/device-icon/${item.device_id}/${user_id}`"
+        />
+      </v-avatar>
+    </template>
     <template v-slot:item.odometer_mi="{ item }">
       {{ item.odometer_mi_display }}
     </template>
@@ -113,6 +121,7 @@
 
 <script>
 import DeviceTableExpandedItem from './DeviceTableExpandedItem.vue'
+import { USER } from '@/constants/user'
 export default {
   name: 'DeviceTable',
   components: {
@@ -127,7 +136,11 @@ export default {
       STOPPED: 'red darken-4',
       NOSIGNAL: 'grey darken-4',
     },
+    showDefaultIcon: false,
   }),
+  mounted() {
+    console.log(process.env)
+  },
   methods: {
     setHiddenDevices() {
       if (this.noHiddenDevices) {
@@ -233,6 +246,12 @@ export default {
     },
   },
   computed: {
+    user_id() {
+      return USER.user_id
+    },
+    root() {
+      return window.location.origin
+    },
     headers() {
       return this.$store.getters.deviceHeadersFiltered
     },

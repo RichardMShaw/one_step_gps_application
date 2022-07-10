@@ -61,9 +61,19 @@ export default {
       if (this.marker) {
         let latLng = { lat: this.lat, lng: this.lng }
         this.marker.setPosition(latLng)
-        let icon = this.marker.getIcon()
-        icon.rotation = this.angle
-        icon.fillColor = COLORS[this.drive_status]
+        let icon = {
+          path: faLocationArrow.icon[4],
+          fillColor: COLORS[this.drive_status],
+          storkeColor: '#212121',
+          fillOpacity: 1,
+          anchor: new google.maps.Point(
+            faLocationArrow.icon[0] / 2, // width
+            faLocationArrow.icon[1], // height
+          ),
+          scale: 0.075,
+          rotation: this.angle,
+        }
+        this.marker.setIcon(icon)
       }
     },
   },

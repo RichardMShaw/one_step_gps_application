@@ -4,6 +4,12 @@ const SHOW = {
   value: 'show',
   sortable: false,
 }
+const ICON = {
+  text: 'Icon',
+  align: 'center',
+  value: 'icon',
+  sortable: false,
+}
 const NAME = {
   text: 'Name',
   align: 'left',
@@ -18,6 +24,11 @@ const DRIVE_STATUS_DURATION = {
   text: 'Status Duration',
   align: 'left',
   value: 'drive_status_duration',
+}
+const POSITION = {
+  text: 'Position',
+  align: 'left',
+  value: 'position',
 }
 const MODEL = {
   text: 'Model',
@@ -77,9 +88,11 @@ const ACTIVE_STATE = {
 
 const ALL_DEVICE_HEADERS = [
   SHOW,
+  ICON,
   NAME,
   DRIVE_STATUS,
   DRIVE_STATUS_DURATION,
+  POSITION,
   MODEL,
   ODOMETER_MI,
   ODOMETER_KM,
@@ -105,6 +118,7 @@ const ALL_DEVICE_HEADERS_ALPHABETICAL = [...ALL_DEVICE_HEADERS].sort((x, y) => {
 
 const DEFAULT_DEVICE_HEADER_SETTINGS = {
   show: true,
+  icon: true,
   display_name: true,
   model: true,
   odometer_mi_display: true,

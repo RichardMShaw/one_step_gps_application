@@ -1,5 +1,4 @@
-const GOOGLE_MAPS_KEY = 'AIzaSyCVnXuQws5QjC8WDSLX86Lgpmvzt7JadbE'
-
+const GOOGLE_MAPS_KEY = process.env.VUE_APP_GOOGLE_MAPS_KEY
 const mapSettings = {
   clickableIcons: false,
   streetViewControl: false,

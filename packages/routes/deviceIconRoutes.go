@@ -3,8 +3,9 @@ package routes
 import (
 	"context"
 	"fmt"
-	"log"
+	"io/ioutil"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"github.com/RichardMShaw/one_step_gps_application/packages/app_config"
@@ -31,13 +32,20 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			"user_id":   user_id,
 		}).Decode(&item)
 		if err != nil {
-			log.Println(err)
+			fileBytes, err := ioutil.ReadFile("assets/placeholder.png")
+			if err != nil {
+				fmt.Println("Placeholder Icon Not Found.")
+				return
+			}
+			w.Write(fileBytes)
 			return
 		}
 		db.DownloadFile(w, client, item.FileID, "onestepgps")
 	})
+
 	mux.Post("/api/device-icon", func(w http.ResponseWriter, r *http.Request) {
 		var err error
+		r.Body = http.MaxBytesReader(w, r.Body, 512*1024)
 		file, handler, err := r.FormFile("icon")
 		if err != nil {
 			fmt.Println("Error Retrieving file from form-data")
@@ -47,6 +55,21 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		defer file.Close()
 
 		client := app.MongoClient
+
+		ext := filepath.Ext(handler.Filename)
+
+		switch ext {
+
+		case "jpg":
+			w.Header().Set("Content-Type", "image/jpeg")
+		case "jpeg":
+			w.Header().Set("Content-Type", "image/jpeg")
+		case "png":
+			w.Header().Set("Content-Type", "image/png")
+		default:
+			http.Error(w, "Invalid image type", http.StatusBadRequest)
+			return
+		}
 
 		file_id := db.UploadFile(client, file, handler.Filename, "onestepgps")
 		device_id := r.FormValue("device_id")
