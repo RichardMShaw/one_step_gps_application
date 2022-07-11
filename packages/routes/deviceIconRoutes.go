@@ -14,17 +14,18 @@ import (
 	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
+	client := app.MongoClient
+	database := client.Database("onestepgps")
+	collection := database.Collection("deviceicons")
+
 	mux.Get("/api/device-icon/{device_id}/{user_id}", func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		device_id := chi.URLParam(r, "device_id")
 		user_id, _ := primitive.ObjectIDFromHex(chi.URLParam(r, "user_id"))
-
-		client := app.MongoClient
-		database := client.Database("onestepgps")
-		collection := database.Collection("deviceicons")
 		var item models.DeviceIcon
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 		err = collection.FindOne(ctx, bson.M{
@@ -48,8 +49,7 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		r.Body = http.MaxBytesReader(w, r.Body, 512*1024)
 		file, handler, err := r.FormFile("icon")
 		if err != nil {
-			fmt.Println("Error Retrieving file from form-data")
-			fmt.Println(err)
+			http.Error(w, "Error Retrieving file from form-data", http.StatusBadRequest)
 			return
 		}
 		defer file.Close()
@@ -68,16 +68,11 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			return
 		}
 
-		client := app.MongoClient
-
 		file_id := db.UploadFile(client, file, handler.Filename, "onestepgps")
 		device_id := r.FormValue("device_id")
 		user_id, _ := primitive.ObjectIDFromHex(r.FormValue("user_id"))
 
 		deviceIcon := models.DeviceIcon{FileID: file_id, DeviceID: device_id, UserID: user_id}
-
-		database := client.Database("onestepgps")
-		collection := database.Collection("deviceicons")
 
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 		var item models.DeviceIcon
@@ -85,11 +80,13 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			"device_id": device_id,
 			"user_id":   user_id,
 		}, bson.M{"$set": deviceIcon}).Decode(&item)
-		if err == nil {
-			db.DeleteFile(client, item.FileID, "onestepgps")
-		} else {
-			fmt.Println(deviceIcon)
+
+		if err == mongo.ErrNoDocuments {
 			collection.InsertOne(ctx, deviceIcon)
+		} else if err != nil {
+			http.Error(w, "Failed to Save Data", http.StatusInternalServerError)
+			return
 		}
+		db.DeleteFile(client, item.FileID, "onestepgps")
 	})
 }
