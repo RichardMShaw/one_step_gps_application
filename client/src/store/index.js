@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import Device from '@/utils/deviceClass'
+import DeviceSortSettingAPI from '@/utils/deviceSortSettingAPI'
+const { postDeviceSortSetting } = DeviceSortSettingAPI
 import DeviceAPI from '@/utils/deviceAPI'
 const { getDevices } = DeviceAPI
 import {
@@ -22,6 +24,10 @@ export default new Vuex.Store({
     deviceHeaderSettings: JSON.parse(
       JSON.stringify(DEFAULT_DEVICE_HEADER_SETTINGS),
     ),
+    postDeviceSortSettingTimeout: null,
+    postDeviceFilterSettingTimeout: null,
+    postDeviceHiddenSettingTimeout: null,
+    postDeviceHeaderSettingTimeout: null,
   },
   getters: {
     mapTypeId(state) {
@@ -101,13 +107,36 @@ export default new Vuex.Store({
     setDeviceIconModal(state, value) {
       state.deviceIconModel = value
     },
+    setPostDeviceSortSettingTimeout(state, value) {
+      state.postDeviceSortSettingTimeout = value
+    },
+    stopPostDeviceSortSettingTimeout(state) {
+      clearTimeout(state.postDeviceSortSettingTimeout)
+    },
+    setPostDeviceFilterSettingTimeout(state, value) {
+      state.postDeviceFilterSettingTimeout = value
+    },
+    stopPostDeviceFilterSettingTimeout(state) {
+      clearTimeout(state.postDeviceFilterSettingTimeout)
+    },
+    setPostDeviceHiddenSettingTimeout(state, value) {
+      state.postDeviceHiddenSettingTimeout = value
+    },
+    stopPostDeviceHiddenSettingTimeout(state) {
+      clearTimeout(state.postDeviceHiddenSettingTimeout)
+    },
+    setPostDeviceHeaderSettingTimeout(state, value) {
+      state.postDeviceHeaderSettingTimeout = value
+    },
+    stopPostDeviceHeaderSettingTimeout(state) {
+      clearTimeout(state.postDeviceHeaderSettingTimeout)
+    },
   },
   actions: {
     closeDeviceIconModal({ commit }) {
       commit('setDeviceIconModal', { device: null, show: false })
     },
     showDeviceIconModal({ commit }, value) {
-      console.log(value)
       commit('setDeviceIconModal', { device: value, show: true })
     },
     changeDeviceHeaderSetting({ commit }, value) {
@@ -157,8 +186,60 @@ export default new Vuex.Store({
       commit('stopGetDevicesTimeout')
       commit('setGetDevicesTimeout', setTimeout(updateFunc, 0))
     },
-    stopGetDevicesTimeout({ commit }) {
-      commit('stopGetDevicesTimeout')
+    stopPostDeviceSortSetting({ commit }) {
+      commit('stopDeviceSortSettingTimeout')
+    },
+    startPostDeviceSortSetting({ commit }, value) {
+      commit('stopDeviceSortSettingTimeout')
+      commit(
+        'setDeviceSortSettingTimeout',
+        setTimeout(() => {
+          let formData = new FormData()
+          formData.append('sort_by', value.sortBy)
+          formData.append('sort_desc', value.sortDesc)
+          postDeviceSortSetting(formData).catch((err) => console.error(err))
+        }, 5000),
+      )
+    },
+    stopPostDeviceFilterSetting({ commit }) {
+      commit('stopDeviceSortSettingTimeout')
+    },
+    startPostDeviceFilterSetting({ commit }, value) {
+      commit('stopDeviceFilterSettingTimeout')
+      commit(
+        'setDeviceFilterSettingTimeout',
+        setTimeout(() => {
+          let formData = new FormData()
+          formData.append('drive_status', value.drive_status)
+          postDeviceFilterSetting(formData).catch((err) => console.error(err))
+        }, 5000),
+      )
+    },
+    stopPostDeviceHiddenSetting({ commit }) {
+      commit('stopDeviceHidden.SettingTimeout')
+    },
+    startPostDeviceHiddenSetting({ commit }, value) {
+      commit('stopDeviceHiddenSettingTimeout')
+      commit(
+        'setDeviceHiddenSettingTimeout',
+        setTimeout(() => {
+          let formJson = { hidden_devices: value }
+          postDeviceFilterSetting(formJson).catch((err) => console.error(err))
+        }, 5000),
+      )
+    },
+    stopPostDeviceHeaderSetting({ commit }) {
+      commit('stopDeviceFilterSettingTimeout')
+    },
+    startPostDeviceHeaderSetting({ commit }, value) {
+      commit('stopDeviceHeaderSettingTimeout')
+      commit(
+        'setDeviceHeaderSettingTimeout',
+        setTimeout(() => {
+          let formJson = { header_settings: value }
+          postDeviceFilterSetting(formJson).catch((err) => console.error(err))
+        }, 5000),
+      )
     },
   },
   modules: {},

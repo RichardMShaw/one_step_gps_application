@@ -8,6 +8,8 @@
     hide-default-footer
     class="elevation-1"
     :item-class="itemRowBackground"
+    :sort-by.sync="sortBy"
+    :sort-desc.sync="sortDesc"
   >
     <template v-slot:top>
       <div style="display: flex;">
@@ -120,6 +122,8 @@
 </style>
 
 <script>
+import DeviceSortSettingAPI from '@/utils/deviceSortSettingAPI'
+const { postDeviceSortSetting } = DeviceSortSettingAPI
 import DeviceTableExpandedItem from './DeviceTableExpandedItem.vue'
 import { USER } from '@/constants/user'
 export default {
@@ -137,6 +141,8 @@ export default {
       NOSIGNAL: 'grey darken-4',
     },
     showDefaultIcon: false,
+    sortBy: null,
+    sortDesc: null,
   }),
   mounted() {},
   methods: {
@@ -299,6 +305,20 @@ export default {
       return count
     },
   },
-  watch: {},
+  watch: {
+    statusFilter() {},
+    sortBy() {
+      this.$store.dispatch('startPostDeviceSortSetting', {
+        sort_by: this.sortBy,
+        sort_desc: this.sortDesc,
+      })
+    },
+    sortDesc() {
+      this.$store.dispatch('startPostDeviceSortSetting', {
+        sort_by: this.sortBy,
+        sort_desc: this.sortDesc,
+      })
+    },
+  },
 }
 </script>

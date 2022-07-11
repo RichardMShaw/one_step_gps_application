@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -21,14 +22,13 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	client := app.MongoClient
 	database := client.Database("onestepgps")
 	collection := database.Collection("deviceicons")
+	user_id, _ := primitive.ObjectIDFromHex(os.Getenv("USER_ID"))
 
-	mux.Get("/api/device-icon/{device_id}/{user_id}", func(w http.ResponseWriter, r *http.Request) {
-		var err error
+	mux.Get("/api/device-icon/{device_id}", func(w http.ResponseWriter, r *http.Request) {
 		device_id := chi.URLParam(r, "device_id")
-		user_id, _ := primitive.ObjectIDFromHex(chi.URLParam(r, "user_id"))
 		var item models.DeviceIcon
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-		err = collection.FindOne(ctx, bson.M{
+		err := collection.FindOne(ctx, bson.M{
 			"device_id": device_id,
 			"user_id":   user_id,
 		}).Decode(&item)
@@ -45,7 +45,6 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	})
 
 	mux.Post("/api/device-icon", func(w http.ResponseWriter, r *http.Request) {
-		var err error
 		r.Body = http.MaxBytesReader(w, r.Body, 512*1024)
 		file, handler, err := r.FormFile("icon")
 		if err != nil {
@@ -70,23 +69,23 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 
 		file_id := db.UploadFile(client, file, handler.Filename, "onestepgps")
 		device_id := r.FormValue("device_id")
-		user_id, _ := primitive.ObjectIDFromHex(r.FormValue("user_id"))
 
-		deviceIcon := models.DeviceIcon{FileID: file_id, DeviceID: device_id, UserID: user_id}
+		newItem := models.DeviceIcon{FileID: file_id, DeviceID: device_id}
 
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-		var item models.DeviceIcon
+		var oldItem models.DeviceIcon
 		err = collection.FindOneAndUpdate(ctx, bson.M{
 			"device_id": device_id,
-			"user_id":   user_id,
-		}, bson.M{"$set": deviceIcon}).Decode(&item)
+		}, bson.M{"$currentDate": bson.M{"updated_at": true}, "$set": newItem}).Decode(&oldItem)
 
 		if err == mongo.ErrNoDocuments {
-			collection.InsertOne(ctx, deviceIcon)
+			newItem.CreatedAt = time.Now()
+			newItem.UpdatedAt = newItem.CreatedAt
+			collection.InsertOne(ctx, newItem)
 		} else if err != nil {
 			http.Error(w, "Failed to Save Data", http.StatusInternalServerError)
 			return
 		}
-		db.DeleteFile(client, item.FileID, "onestepgps")
+		db.DeleteFile(client, oldItem.FileID, "onestepgps")
 	})
 }

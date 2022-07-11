@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/RichardMShaw/one_step_gps_application/packages/app_config"
@@ -20,16 +21,12 @@ func deviceHiddenSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	client := app.MongoClient
 	database := client.Database("onestepgps")
 	collection := database.Collection("devicehiddensettings")
+	user_id, _ := primitive.ObjectIDFromHex(os.Getenv("USER_ID"))
 
-	mux.Get("/api/device-hidden-settings/{user_id}", func(w http.ResponseWriter, r *http.Request) {
-		user_id, err := primitive.ObjectIDFromHex(chi.URLParam(r, "user_id"))
-		if err != nil {
-			http.Error(w, "Invalid User Id", http.StatusBadRequest)
-			return
-		}
+	mux.Get("/api/device-hidden-settings", func(w http.ResponseWriter, r *http.Request) {
 		var item models.DeviceHiddenSettings
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-		err = collection.FindOne(ctx, bson.M{
+		err := collection.FindOne(ctx, bson.M{
 			"user_id": user_id,
 		}).Decode(&item)
 

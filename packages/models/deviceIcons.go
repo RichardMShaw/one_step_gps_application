@@ -1,10 +1,15 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type DeviceIcon struct {
-	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	UserID   primitive.ObjectID `json:"user_id" bson:"user_id,omitempty"`
-	DeviceID string             `json:"device_id" bson:"device_id,omitempty"`
-	FileID   primitive.ObjectID `json:"file_id" bson:"file_id,omitempty"`
+	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	FileID    primitive.ObjectID `json:"file_id" bson:"file_id,omitempty"`
+	DeviceID  string             `json:"device_id" bson:"device_id,omitempty"`
+	CreatedAt time.Time          `json:"created_at" bson:"created_at,omitempty"`
+	UpdatedAt time.Time          `json:"updated_at" bson:"updated_at,omitempty"`
 }

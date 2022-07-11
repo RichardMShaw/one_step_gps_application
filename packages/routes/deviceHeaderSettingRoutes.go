@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/RichardMShaw/one_step_gps_application/packages/app_config"
@@ -19,16 +20,12 @@ func deviceHeaderSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	client := app.MongoClient
 	database := client.Database("onestepgps")
 	collection := database.Collection("deviceheadersettings")
+	user_id, _ := primitive.ObjectIDFromHex(os.Getenv("USER_ID"))
 
-	mux.Get("/api/device-header-settings/{user_id}", func(w http.ResponseWriter, r *http.Request) {
-		user_id, err := primitive.ObjectIDFromHex(chi.URLParam(r, "user_id"))
-		if err != nil {
-			http.Error(w, "Invalid User Id", http.StatusBadRequest)
-			return
-		}
+	mux.Get("/api/device-header-settings", func(w http.ResponseWriter, r *http.Request) {
 		var item models.DeviceHeaderSettings
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-		err = collection.FindOne(ctx, bson.M{
+		err := collection.FindOne(ctx, bson.M{
 			"user_id": user_id,
 		}).Decode(&item)
 
@@ -67,9 +64,9 @@ func deviceHeaderSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			http.Error(w, "Invalid User Id", http.StatusBadRequest)
 			return
 		}
-		hidden_devices := f.HeaderSettings
+		header_settings := f.HeaderSettings
 
-		newItem := models.DeviceHeaderSettings{UserID: user_id, HeaderSettings: hidden_devices}
+		newItem := models.DeviceHeaderSettings{UserID: user_id, HeaderSettings: header_settings}
 
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 

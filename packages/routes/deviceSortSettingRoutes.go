@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -19,9 +20,9 @@ func deviceSortSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	client := app.MongoClient
 	database := client.Database("onestepgps")
 	collection := database.Collection("devicesortsettings")
+	user_id, _ := primitive.ObjectIDFromHex(os.Getenv("USER_ID"))
 
-	mux.Get("/api/device-sort-settings/{user_id}", func(w http.ResponseWriter, r *http.Request) {
-		user_id := chi.URLParam(r, "user_id")
+	mux.Get("/api/device-sort-settings", func(w http.ResponseWriter, r *http.Request) {
 
 		var item models.DeviceSortSettings
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -45,13 +46,6 @@ func deviceSortSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	})
 
 	mux.Post("/api/device-sort-settings", func(w http.ResponseWriter, r *http.Request) {
-
-		user_id, err := primitive.ObjectIDFromHex(r.FormValue("user_id"))
-		if err != nil {
-			http.Error(w, "Invalid User Id", http.StatusBadRequest)
-			return
-		}
-
 		sort_desc, err := strconv.ParseBool(r.FormValue("sort_desc"))
 		if err != nil {
 			http.Error(w, "Invalid Sort Desc", http.StatusBadRequest)
