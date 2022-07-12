@@ -1,8 +1,22 @@
 <template>
-  <div :id="`${id}_info_window`">
-    {{ name }}
-  </div>
+  <span>
+    <div :id="`${id}_info_window`" class="no-display">
+      <div class="info-container">
+        <img width="32px" height="32px" :src="`${getIcon()}`" />
+        <div>{{ name }}</div>
+      </div>
+    </div>
+  </span>
 </template>
+
+<style scoped>
+.info-container {
+  text-align: center;
+}
+.no-display {
+  display: none;
+}
+</style>
 
 <script>
 import { faLocationArrow } from '@fortawesome/free-solid-svg-icons'
@@ -29,10 +43,46 @@ export default {
     return {
       marker: null,
       infoWindow: null,
+      templateInfo: null,
     }
   },
 
+  methods: {
+    getIcon() {
+      if (!this.deviceIcons[this.id]) {
+        getAndStoreDeviceIcon(this.id)
+      }
+      return this.deviceIcons[this.id]
+    },
+    appendToInfoWindow() {
+      this.$nextTick(() => {
+        let elem = document.getElementById(`${this.id}_info_id`)
+        let templateInfo = this.templateInfo
+        if (elem && templateInfo) {
+          templateInfo.style.display = 'block'
+          elem.append(templateInfo)
+        } else {
+          setTimeout(this.appendToInfoWindow, 1000 / 30)
+        }
+      })
+    },
+    openInfoWindow() {
+      const { InfoWindow } = this.google.maps
+      if (this.infoWindow && this.infoWindow.getMap() != null) {
+        return
+      }
+      this.infoWindow = new InfoWindow({
+        content: `<div id="${this.id}_info_id"></div>`,
+      })
+      this.infoWindow.open({ anchor: this.marker, map: this.map })
+      this.appendToInfoWindow()
+    },
+  },
+
   computed: {
+    deviceIcons() {
+      return this.$store.getters.deviceIcons
+    },
     id() {
       return this.device.device_id
     },
@@ -52,7 +102,18 @@ export default {
       return this.device.angle + 315
     },
     icon() {
-      return this.marker.icon
+      return {
+        path: faLocationArrow.icon[4],
+        fillColor: COLORS[this.drive_status],
+        storkeColor: '#212121',
+        fillOpacity: 1,
+        anchor: new google.maps.Point(
+          faLocationArrow.icon[0] / 2, // width
+          faLocationArrow.icon[1], // height
+        ),
+        scale: 0.075,
+        rotation: this.angle,
+      }
     },
   },
 
@@ -61,60 +122,23 @@ export default {
       if (this.marker) {
         let latLng = { lat: this.lat, lng: this.lng }
         this.marker.setPosition(latLng)
-        let icon = {
-          path: faLocationArrow.icon[4],
-          fillColor: COLORS[this.drive_status],
-          storkeColor: '#212121',
-          fillOpacity: 1,
-          anchor: new google.maps.Point(
-            faLocationArrow.icon[0] / 2, // width
-            faLocationArrow.icon[1], // height
-          ),
-          scale: 0.075,
-          rotation: this.angle,
-        }
-        this.marker.setIcon(icon)
+        this.marker.setIcon(this.icon)
       }
     },
   },
 
   mounted() {
-    const { Marker, InfoWindow } = this.google.maps
-    // const { InfoWindow } = this.google.maps
+    this.templateInfo = document.getElementById(`${this.id}_info_window`)
+    const { Marker } = this.google.maps
     let position = { lat: this.lat, lng: this.lng }
-    let icon = {
-      path: faLocationArrow.icon[4],
-      fillColor: COLORS[this.drive_status],
-      storkeColor: '#212121',
-      fillOpacity: 1,
-      anchor: new google.maps.Point(
-        faLocationArrow.icon[0] / 2, // width
-        faLocationArrow.icon[1], // height
-      ),
-      scale: 0.075,
-      rotation: this.angle,
-    }
-
     this.marker = new Marker({
       position: position,
       marker: { id: this.device.device_id, position: position },
       map: this.map,
-      icon: icon,
+      icon: this.icon,
     })
-    this.infoWindow = new InfoWindow({
-      content: `<div id="${this.id}_info_id"></div>`,
-    })
-    this.infoWindow.open({ anchor: this.marker, map: this.map })
-    setTimeout(() => {
-      let elem = document.getElementById(`${this.id}_info_id`)
-      if (elem) {
-        let parent = elem.parentElement.parentElement.parentElement
-        let removeBtn = parent.children[1]
-        parent.removeChild(removeBtn)
-        let realInfo = document.getElementById(`${this.id}_info_window`)
-        elem.append(realInfo)
-      }
-    }, 1000 / 15)
+    this.openInfoWindow()
+    this.marker.addListener('click', () => this.openInfoWindow())
   },
 
   beforeDestroy() {

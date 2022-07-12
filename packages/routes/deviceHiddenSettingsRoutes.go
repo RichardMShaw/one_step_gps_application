@@ -65,11 +65,7 @@ func deviceHiddenSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			http.Error(w, "Failed to Read", http.StatusBadRequest)
 			return
 		}
-		user_id, err := primitive.ObjectIDFromHex(f.UserID)
-		if err != nil {
-			http.Error(w, "Invalid User Id", http.StatusBadRequest)
-			return
-		}
+
 		hidden_devices := f.HiddenDevices
 
 		newItem := models.DeviceHiddenSettings{UserID: user_id, HiddenDevices: hidden_devices}

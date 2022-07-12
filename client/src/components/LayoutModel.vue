@@ -75,6 +75,8 @@
 </style>
 
 <script>
+import DeviceHeaderSettingsAPI from '@/utils/deviceHeaderSettingsAPI'
+const { postAndStoreDeviceHeaderSettings } = DeviceHeaderSettingsAPI
 import { ALL_DEVICE_HEADERS } from '@/constants/deviceHeaders'
 export default {
   name: 'LayoutModel',
@@ -89,6 +91,10 @@ export default {
       this.$store.dispatch('closeLayoutModel')
     },
     save() {
+      postAndStoreDeviceHeaderSettings(
+        { header_settings: this.deviceHeaders },
+        true,
+      )
       this.$store.dispatch('closeLayoutModel')
     },
     color(item) {

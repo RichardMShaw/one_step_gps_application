@@ -10,7 +10,7 @@ const DeviceHeaderSettingsAPI = {
     if (isInit && store.state.deviceHeaderSettings) {
       return
     }
-    axios.get(`/api/device-header-settings`).then(({ data }) => {
+    return axios.get(`/api/device-header-settings`).then(({ data }) => {
       if (data) {
         store.commit('setDeviceHeaderSettings', data.header_settings)
       } else {
@@ -18,24 +18,7 @@ const DeviceHeaderSettingsAPI = {
       }
     })
   },
-  postDeviceHeaderSettings: (data) => {
-    let body = { header_settings: data.header_settings }
 
-    if (posting) {
-      return
-    }
-    posting = true
-
-    axios
-      .post('/api/device-header-settings', body)
-      .then((res) => {
-        posting = false
-      })
-      .catch((err) => {
-        posting = false
-        console.error(err)
-      })
-  },
   postAndStoreDeviceHeaderSettings: (data, instantStore = false) => {
     let body = { header_settings: data.header_settings }
     if (instantStore) {
@@ -47,7 +30,7 @@ const DeviceHeaderSettingsAPI = {
     }
     posting = true
 
-    axios
+    return axios
       .post('/api/device-header-settings', body)
       .then((res) => {
         if (!instantStore) {

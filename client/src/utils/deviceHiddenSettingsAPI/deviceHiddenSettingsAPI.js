@@ -9,15 +9,22 @@ const DeviceHiddenSettingsAPI = {
     if (isInit && store.state.deviceHiddenSettings) {
       return
     }
-    axios.get(`/api/device-hidden-settings`).then(({ data }) => {
-      if (data) {
+    return axios.get(`/api/device-hidden-settings`).then(({ data }) => {
+      if (data.hidden_devices) {
         store.commit('setDeviceHiddenSettings', data.hidden_devices)
+      } else {
+        store.commit('setDeviceHiddenSettings', {})
       }
     })
   },
   postDeviceHiddenSettings: (data) => {
+    if (posting) {
+      return
+    }
+    posting = true
+
     let body = { hidden_devices: data.hidden_devices }
-    axios
+    return axios
       .post('/api/device-hidden-settings', body)
       .then((res) => {
         posting = false
@@ -27,7 +34,6 @@ const DeviceHiddenSettingsAPI = {
         console.error(err)
       })
   },
-
   postAndStoreDeviceHiddenSettings: (data, instantStore = false) => {
     let body = { hidden_devices: data.hidden_devices }
 
@@ -39,7 +45,7 @@ const DeviceHiddenSettingsAPI = {
       return
     }
     posting = true
-    axios
+    return axios
       .post('/api/device-hidden-settings', body)
       .then((res) => {
         if (!instantStore) {

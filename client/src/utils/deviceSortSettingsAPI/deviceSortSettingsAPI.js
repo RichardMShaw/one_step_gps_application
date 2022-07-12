@@ -9,7 +9,7 @@ const DeviceSortSettingsAPI = {
     if (isInit && store.state.deviceSortSettings) {
       return
     }
-    axios.get(`/api/device-sort-settings`).then(({ data }) => {
+    return axios.get(`/api/device-sort-settings`).then(({ data }) => {
       if (data) {
         store.commit('setDeviceSortSettings', {
           sort_by: data.sort_by,
@@ -18,26 +18,6 @@ const DeviceSortSettingsAPI = {
       }
     })
   },
-  postDeviceSortSettings: (data) => {
-    if (posting) {
-      return
-    }
-    posting = true
-
-    let formData = new FormData()
-    formData.append('sort_by', data.sort_by)
-    formData.append('sort_desc', data.sort_desc ? true : false)
-    axios
-      .post('/api/device-sort-settings', formData)
-      .then((res) => {
-        posting = false
-      })
-      .catch((err) => {
-        posting = false
-        console.error(err)
-      })
-  },
-
   postAndStoreDeviceSortSettings: (data, instantStore = false) => {
     if (instantStore) {
       store.commit('setDeviceSortSettings', {
@@ -54,7 +34,8 @@ const DeviceSortSettingsAPI = {
     let formData = new FormData()
     formData.append('sort_by', data.sort_by)
     formData.append('sort_desc', data.sort_desc ? true : false)
-    axios
+
+    return axios
       .post('/api/device-sort-settings', formData)
       .then((res) => {
         posting = false

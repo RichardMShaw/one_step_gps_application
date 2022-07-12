@@ -61,11 +61,6 @@ func deviceHeaderSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			http.Error(w, "Failed to Read", http.StatusBadRequest)
 			return
 		}
-		user_id, err := primitive.ObjectIDFromHex(f.UserID)
-		if err != nil {
-			http.Error(w, "Invalid User Id", http.StatusBadRequest)
-			return
-		}
 		header_settings := f.HeaderSettings
 
 		newItem := models.DeviceHeaderSettings{UserID: user_id, HeaderSettings: header_settings}

@@ -15,24 +15,6 @@ const DeviceFilterSettingsAPI = {
       }
     })
   },
-  postDeviceFilterSettings: (data) => {
-    if (posting) {
-      return
-    }
-    posting = true
-
-    let formData = new FormData()
-    formData.append('drive_status', data.drive_status)
-    axios
-      .post('/api/device-filter-settings', formData)
-      .then((res) => {
-        posting = false
-      })
-      .catch((err) => {
-        posting = false
-        console.error(err)
-      })
-  },
   postAndStoreDeviceFilterSettings: (data, instantStore = false) => {
     if (instantStore) {
       store.commit('setDeviceFilterSettings', data.drive_status)
@@ -46,7 +28,7 @@ const DeviceFilterSettingsAPI = {
     let formData = new FormData()
     formData.append('drive_status', data.drive_status)
 
-    axios
+    return axios
       .post('/api/device-filter-settings', formData)
       .then((res) => {
         if (!instantStore) {

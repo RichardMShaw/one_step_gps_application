@@ -2,8 +2,6 @@ package routes
 
 import (
 	"context"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -30,15 +28,12 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		err := collection.FindOne(ctx, bson.M{
 			"device_id": device_id,
 		}).Decode(&item)
-		if err != nil {
-			fileBytes, err := ioutil.ReadFile("assets/placeholder.png")
-			if err != nil {
-				fmt.Println("Placeholder Icon Not Found.")
-				return
-			}
-			w.Write(fileBytes)
+
+		if err == mongo.ErrNoDocuments {
+			w.WriteHeader(http.StatusNoContent)
 			return
 		}
+
 		db.DownloadFile(w, client, item.FileID, "onestepgps")
 	})
 

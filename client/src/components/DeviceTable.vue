@@ -13,22 +13,16 @@
   >
     <template v-slot:top>
       <div style="display: flex;">
-        <v-tabs :background-color="tabColor" center-active dark show-arrows>
+        <v-tabs
+          v-model="activeTab"
+          :background-color="tabColor"
+          center-active
+          dark
+          show-arrows
+        >
           <v-tabs-slider color="yellow"></v-tabs-slider>
-          <v-tab @click="filterDevices('ALL')">
-            All ({{ device_status_count.ALL }})
-          </v-tab>
-          <v-tab @click="filterDevices('DRIVING')">
-            Driving ({{ device_status_count.DRIVING }})
-          </v-tab>
-          <v-tab @click="filterDevices('IDLE')">
-            Idle ({{ device_status_count.IDLE }})
-          </v-tab>
-          <v-tab @click="filterDevices('STOPPED')">
-            Stopped ({{ device_status_count.STOPPED }})
-          </v-tab>
-          <v-tab @click="filterDevices('NOSIGNAL')">
-            No Signal ({{ device_status_count.NOSIGNAL }})
+          <v-tab v-for="(tab, i) in tabs" :key="i" @click="filterDevices(tab)">
+            {{ `${tab} (${device_status_count[tab]})` }}
           </v-tab>
           <v-spacer></v-spacer>
           <v-btn height="100%" dark @click="$store.dispatch('showLayoutModel')">
@@ -41,24 +35,21 @@
       </div>
     </template>
     <template v-slot:header.show>
-      <v-icon @click="setHiddenDevices">{{ eyeIcon }}</v-icon>
+      <v-icon @click="setAllHiddenDevices">{{ eyeIcon }}</v-icon>
     </template>
     <template v-slot:item.show="{ item }">
       <td class="show-icon-td">
         <v-simple-checkbox
-          :value="!isHidden(item)"
+          v-model="item.show"
           @click="changeHiddenDevice(item)"
-          v-ripple
+          v-ripple="false"
           color="blue"
         ></v-simple-checkbox>
       </td>
     </template>
     <template v-slot:item.icon="{ item }">
       <v-avatar @click.stop="changeIcon(item)">
-        <img
-          v-if="!showDefaultIcon"
-          :src="`${root}/api/device-icon/${item.device_id}`"
-        />
+        <img :src="`${getIcon(item)}`" />
       </v-avatar>
     </template>
     <template v-slot:item.odometer_mi="{ item }">
@@ -134,7 +125,7 @@ const { getAndStoreDeviceHeaderSettings } = DeviceHeaderSettingsAPI
 import DeviceHiddenSettingsAPI from '@/utils/deviceHiddenSettingsAPI'
 const {
   getAndStoreDeviceHiddenSettings,
-  postAndStoreDeviceHiddenSettings,
+  postDeviceHiddenSettings,
 } = DeviceHiddenSettingsAPI
 
 import DeviceSortSettingsAPI from '@/utils/deviceSortSettingsAPI'
@@ -142,6 +133,9 @@ const {
   getAndStoreDeviceSortSettings,
   postAndStoreDeviceSortSettings,
 } = DeviceSortSettingsAPI
+
+import DeviceIconAPI from '@/utils/deviceIconAPI'
+const { getAndStoreDeviceIcon } = DeviceIconAPI
 
 import DeviceTableExpandedItem from './DeviceTableExpandedItem.vue'
 
@@ -161,7 +155,9 @@ export default {
     },
     showDefaultIcon: false,
     sortBy: '',
-    sortDesc: false,
+    sortDesc: null,
+    activeTab: 0,
+    tabs: ['ALL', 'DRIVING', 'IDLE', 'STOPPED', 'NOSIGNAL'],
   }),
   mounted() {
     getAndStoreDeviceFilterSettings(true)
@@ -170,30 +166,32 @@ export default {
     getAndStoreDeviceSortSettings(true)
   },
   methods: {
-    isHidden(item) {
-      if (this.hiddenSettings) {
-        return this.hiddenSettings[item.device_id]
+    getIcon(item) {
+      if (!this.deviceIcons[item.device_id]) {
+        getAndStoreDeviceIcon(item.device_id)
       }
-      return false
+      return this.deviceIcons[item.device_id]
     },
     changeIcon(item) {
       this.$store.dispatch('showDeviceIconModal', item)
     },
-    setHiddenDevices() {
+    setAllHiddenDevices() {
       if (this.noHiddenDevices) {
-        this.$store.commit('setHiddenDevices', {
+        this.$store.commit('setAllHiddenDevices', {
           devices: this.devices,
           value: true,
         })
       } else {
-        this.$store.commit('setHiddenDevices', {
+        this.$store.commit('setAllHiddenDevices', {
           devices: this.devices,
           value: false,
         })
       }
+      postDeviceHiddenSettings({ hidden_devices: this.hiddenSettings })
     },
     changeHiddenDevice(item) {
       this.$store.commit('changeHiddenDevice', item)
+      postDeviceHiddenSettings({ hidden_devices: this.hiddenSettings })
     },
     itemRowBackground(item) {
       switch (item.drive_status) {
@@ -278,8 +276,8 @@ export default {
     },
   },
   computed: {
-    root() {
-      return window.location.origin
+    deviceIcons() {
+      return this.$store.getters.deviceIcons
     },
     headers() {
       return this.$store.getters.deviceHeadersFiltered
@@ -288,12 +286,13 @@ export default {
       return this.$store.getters.devicesStatusFiltered
     },
     noHiddenDevices() {
+      let devices = this.devices
       let len = this.devices.length
       if (len < 1) {
         return true
       }
       for (let i = 0; i < len; i++) {
-        if (this.devices[i].show) {
+        if (devices[i].show) {
           return true
         }
       }
@@ -334,17 +333,17 @@ export default {
     },
   },
   watch: {
+    statusFilter() {
+      this.activeTab = this.tabs.indexOf(this.statusFilter)
+    },
     sortSettings() {
       this.sortBy = this.sortSettings.sort_by
       this.sortDesc = this.sortSettings.sort_desc
     },
-    sortBy() {
-      postAndStoreDeviceSortSettings(
-        { sort_by: this.sortBy, sort_desc: this.sortDesc },
-        true,
-      )
-    },
-    sortDesc() {
+    sortDesc(newVal, oldVal) {
+      if (oldVal == null || this.sortSettings.sort_desc == this.sortDesc) {
+        return
+      }
       postAndStoreDeviceSortSettings(
         { sort_by: this.sortBy, sort_desc: this.sortDesc },
         true,
