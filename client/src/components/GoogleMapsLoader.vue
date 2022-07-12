@@ -35,6 +35,7 @@ export default {
     initializeMap() {
       const mapContainer = this.$refs.googleMap
       this.map = new this.google.maps.Map(mapContainer, this.mapConfig)
+      this.$store.commit('newMarkerCluster', { map: this.map })
     },
   },
 }

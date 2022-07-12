@@ -37,6 +37,10 @@ export default {
       type: Device,
       required: true,
     },
+    markerCluster: {
+      type: Object,
+      required: true,
+    },
   },
 
   data() {
@@ -137,16 +141,17 @@ export default {
       map: this.map,
       icon: this.icon,
     })
+    this.markerCluster.addMarker(this.marker)
     this.openInfoWindow()
     this.marker.addListener('click', () => this.openInfoWindow())
   },
 
   beforeDestroy() {
     if (this.marker) {
-      this.marker.setMap(null)
       if (this.infoWindow) {
         this.infoWindow.setMap(null)
       }
+      this.markerCluster.removeMarker(this.marker)
     }
   },
 

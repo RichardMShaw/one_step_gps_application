@@ -1,5 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import { MarkerClusterer } from '@googlemaps/markerclusterer'
+
 import Device from '@/utils/deviceClass'
 import DeviceAPI from '@/utils/deviceAPI'
 const { getDevices } = DeviceAPI
@@ -23,8 +25,12 @@ export default new Vuex.Store({
     deviceSortSettings: null,
     deviceHiddenSettings: null,
     deviceFilterSettings: null,
+    markerCluster: null,
   },
   getters: {
+    markerCluster(state) {
+      return state.markerCluster
+    },
     deviceIcons(state) {
       return state.deviceIcons
     },
@@ -74,6 +80,9 @@ export default new Vuex.Store({
     },
   },
   mutations: {
+    newMarkerCluster(state, { map }) {
+      state.markerCluster = new MarkerClusterer({ map: map })
+    },
     setDeviceIcon(state, value) {
       if (state.deviceIcons[value.device_id]) {
         let obj = { ...state.deviceIcons }

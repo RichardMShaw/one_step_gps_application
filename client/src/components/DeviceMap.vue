@@ -1,13 +1,14 @@
 <template>
   <GoogleMapsLoader :mapConfig="mapConfig" :apiKey="api">
     // insert your google maps api key to render styled map
-    <template slot-scope="{ google, map }" v-if="devices">
+    <template slot-scope="{ google, map }" v-if="devices && markerCluster">
       <GoogleMapsDeviceMarker
         v-for="device in devices"
         :key="device.device_id"
         :device="device"
         :google="google"
         :map="map"
+        :marker-cluster="markerCluster"
       />
     </template>
   </GoogleMapsLoader>
@@ -33,6 +34,9 @@ export default {
   mounted() {},
 
   computed: {
+    markerCluster() {
+      return this.$store.getters.markerCluster
+    },
     mapTypeId() {
       return this.$store.getters.mapTypeId
     },
