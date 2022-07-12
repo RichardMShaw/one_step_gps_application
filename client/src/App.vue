@@ -1,14 +1,14 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark>
+    <v-app-bar app class="app-bar">
       <div class="d-flex align-center">
         <v-img
           alt="Vuetify Logo"
           class="shrink mr-2"
           contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
+          src="@/assets/OSGPS.png"
           transition="scale-transition"
-          width="40"
+          width="60"
         />
       </div>
 
@@ -20,7 +20,14 @@
     </v-main>
   </v-app>
 </template>
-
+<style scoped>
+.app-bar {
+  background: -webkit-linear-gradient(220deg, #1976d2 75%, #ffffff 60%);
+  background: -o-linear-gradient(220deg, #1976d2 75%, #ffffff 60%);
+  background: -moz-linear-gradient(220deg, #1976d2 75%, #ffffff 60%);
+  background: linear-gradient(220deg, #1976d2 75%, #ffffff 60%);
+}
+</style>
 <script>
 export default {
   name: 'App',
