@@ -3,12 +3,14 @@ const SHOW = {
   align: 'start',
   value: 'show',
   sortable: false,
+  hideInExpand: true,
 }
 const ICON = {
   text: 'Icon',
   align: 'center',
   value: 'icon',
   sortable: false,
+  hideInExpand: true,
 }
 const NAME = {
   text: 'Name',
@@ -116,6 +118,10 @@ const ALL_DEVICE_HEADERS_ALPHABETICAL = [...ALL_DEVICE_HEADERS].sort((x, y) => {
   return 0
 })
 
+const EXPANDED_HEADERS = [...ALL_DEVICE_HEADERS_ALPHABETICAL].filter((item) => {
+  return !item.hideInExpand
+})
+
 const DEFAULT_DEVICE_HEADER_SETTINGS = {
   show: true,
   icon: true,
@@ -132,5 +138,6 @@ const DEFAULT_DEVICE_HEADER_SETTINGS = {
 export {
   ALL_DEVICE_HEADERS,
   ALL_DEVICE_HEADERS_ALPHABETICAL,
+  EXPANDED_HEADERS,
   DEFAULT_DEVICE_HEADER_SETTINGS,
 }

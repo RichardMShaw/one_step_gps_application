@@ -164,6 +164,7 @@ export default {
     getAndStoreDeviceHeaderSettings(true)
     getAndStoreDeviceHiddenSettings(true)
     getAndStoreDeviceSortSettings(true)
+    this.activeTab = this.tabs.indexOf(this.statusFilter)
   },
   methods: {
     getIcon(item) {

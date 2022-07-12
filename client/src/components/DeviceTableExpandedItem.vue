@@ -19,7 +19,7 @@
 </style>
 
 <script>
-import { ALL_DEVICE_HEADERS_ALPHABETICAL } from '@/constants/deviceHeaders'
+import { EXPANDED_HEADERS } from '@/constants/deviceHeaders'
 export default {
   name: 'DeviceTableExpandedItem',
   props: {
@@ -29,7 +29,7 @@ export default {
   methods: {},
   computed: {
     headers() {
-      return ALL_DEVICE_HEADERS_ALPHABETICAL
+      return EXPANDED_HEADERS
     },
   },
 }
