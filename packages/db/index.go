@@ -65,10 +65,12 @@ func UploadFile(conn *mongo.Client, file multipart.File, filename string, databa
 }
 
 func DownloadFile(w http.ResponseWriter, conn *mongo.Client, file_id primitive.ObjectID, database string) {
-	// For CRUD operations, here is an example
 	db := conn.Database(database)
 	fsFiles := db.Collection("fs.files")
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	var results bson.M
 	err := fsFiles.FindOne(ctx, bson.M{
 		"_id": file_id,
@@ -76,11 +78,8 @@ func DownloadFile(w http.ResponseWriter, conn *mongo.Client, file_id primitive.O
 	if err != nil {
 		log.Fatal(err)
 	}
-	// you can print out the results
+	bucket, _ := gridfs.NewBucket(db)
 
-	bucket, _ := gridfs.NewBucket(
-		db,
-	)
 	var buf bytes.Buffer
 	_, err = bucket.DownloadToStream(file_id, &buf)
 	if err != nil {

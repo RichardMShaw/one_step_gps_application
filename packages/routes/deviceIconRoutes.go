@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -14,7 +13,6 @@ import (
 	"github.com/RichardMShaw/one_step_gps_application/packages/models"
 	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -22,15 +20,15 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	client := app.MongoClient
 	database := client.Database("onestepgps")
 	collection := database.Collection("deviceicons")
-	user_id, _ := primitive.ObjectIDFromHex(os.Getenv("USER_ID"))
 
 	mux.Get("/api/device-icon/{device_id}", func(w http.ResponseWriter, r *http.Request) {
 		device_id := chi.URLParam(r, "device_id")
 		var item models.DeviceIcon
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
 		err := collection.FindOne(ctx, bson.M{
 			"device_id": device_id,
-			"user_id":   user_id,
 		}).Decode(&item)
 		if err != nil {
 			fileBytes, err := ioutil.ReadFile("assets/placeholder.png")
@@ -72,7 +70,9 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 
 		newItem := models.DeviceIcon{FileID: file_id, DeviceID: device_id}
 
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
 		var oldItem models.DeviceIcon
 		err = collection.FindOneAndUpdate(ctx, bson.M{
 			"device_id": device_id,

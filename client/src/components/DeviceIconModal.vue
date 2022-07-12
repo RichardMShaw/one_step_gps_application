@@ -84,7 +84,6 @@
 <script>
 import DeviceIconAPI from '@/utils/deviceIconAPI'
 const { postDeviceIcon } = DeviceIconAPI
-import { USER } from '@/constants/user.js'
 export default {
   name: 'DeviceIconModel',
   props: ['zIndex'],
@@ -100,7 +99,6 @@ export default {
       let form = new FormData()
       form.append('icon', this.selectedFile)
       form.append('device_id', this.id)
-      form.append('user_id', USER.user_id)
       postDeviceIcon(form)
     },
     setPreviewImage(file) {

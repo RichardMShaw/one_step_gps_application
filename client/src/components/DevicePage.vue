@@ -38,6 +38,7 @@ import DeviceTable from './DeviceTable.vue'
 import DeviceMap from './DeviceMap.vue'
 import LayoutModel from './LayoutModel.vue'
 import DeviceIconModel from './DeviceIconModal.vue'
+
 export default {
   name: 'DevicePage',
   components: {

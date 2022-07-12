@@ -15,7 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func deviceFilterSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
+func deviceFilterSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	client := app.MongoClient
 	database := client.Database("onestepgps")
 	collection := database.Collection("devicefiltersettings")
@@ -23,13 +23,18 @@ func deviceFilterSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 
 	mux.Get("/api/device-filter-settings", func(w http.ResponseWriter, r *http.Request) {
 		var item models.DeviceFilterSettings
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
 		err := collection.FindOne(ctx, bson.M{
 			"user_id": user_id,
 		}).Decode(&item)
 
 		if err == mongo.ErrNoDocuments {
-			w.WriteHeader(http.StatusNoContent)
+			defaultItem, _ := json.Marshal(bson.M{"drive_status": "ALL"})
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write(defaultItem)
 			return
 		}
 
@@ -49,7 +54,8 @@ func deviceFilterSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 
 		newItem := models.DeviceFilterSettings{UserID: user_id, DriveStatus: drive_status}
 
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
 
 		var oldItem models.DeviceFilterSettings
 		err := collection.FindOneAndUpdate(ctx, bson.M{

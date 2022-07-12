@@ -46,7 +46,7 @@
     <template v-slot:item.show="{ item }">
       <td class="show-icon-td">
         <v-simple-checkbox
-          v-model="item.show"
+          :value="!isHidden(item)"
           @click="changeHiddenDevice(item)"
           v-ripple
           color="blue"
@@ -57,7 +57,7 @@
       <v-avatar @click.stop="changeIcon(item)">
         <img
           v-if="!showDefaultIcon"
-          :src="`${root}/api/device-icon/${item.device_id}/${user_id}`"
+          :src="`${root}/api/device-icon/${item.device_id}`"
         />
       </v-avatar>
     </template>
@@ -122,10 +122,29 @@
 </style>
 
 <script>
-import DeviceSortSettingAPI from '@/utils/deviceSortSettingAPI'
-const { postDeviceSortSetting } = DeviceSortSettingAPI
+import DeviceFilterSettingsAPI from '@/utils/deviceFilterSettingsAPI'
+const {
+  getAndStoreDeviceFilterSettings,
+  postAndStoreDeviceFilterSettings,
+} = DeviceFilterSettingsAPI
+
+import DeviceHeaderSettingsAPI from '@/utils/deviceHeaderSettingsAPI'
+const { getAndStoreDeviceHeaderSettings } = DeviceHeaderSettingsAPI
+
+import DeviceHiddenSettingsAPI from '@/utils/deviceHiddenSettingsAPI'
+const {
+  getAndStoreDeviceHiddenSettings,
+  postAndStoreDeviceHiddenSettings,
+} = DeviceHiddenSettingsAPI
+
+import DeviceSortSettingsAPI from '@/utils/deviceSortSettingsAPI'
+const {
+  getAndStoreDeviceSortSettings,
+  postAndStoreDeviceSortSettings,
+} = DeviceSortSettingsAPI
+
 import DeviceTableExpandedItem from './DeviceTableExpandedItem.vue'
-import { USER } from '@/constants/user'
+
 export default {
   name: 'DeviceTable',
   components: {
@@ -141,11 +160,22 @@ export default {
       NOSIGNAL: 'grey darken-4',
     },
     showDefaultIcon: false,
-    sortBy: null,
-    sortDesc: null,
+    sortBy: '',
+    sortDesc: false,
   }),
-  mounted() {},
+  mounted() {
+    getAndStoreDeviceFilterSettings(true)
+    getAndStoreDeviceHeaderSettings(true)
+    getAndStoreDeviceHiddenSettings(true)
+    getAndStoreDeviceSortSettings(true)
+  },
   methods: {
+    isHidden(item) {
+      if (this.hiddenSettings) {
+        return this.hiddenSettings[item.device_id]
+      }
+      return false
+    },
     changeIcon(item) {
       this.$store.dispatch('showDeviceIconModal', item)
     },
@@ -178,7 +208,7 @@ export default {
       }
     },
     filterDevices(status) {
-      this.$store.commit('setDeviceStatusFilter', status)
+      postAndStoreDeviceFilterSettings({ drive_status: status }, true)
     },
     expand(value) {
       if (this.expanded[0] == value) {
@@ -246,16 +276,8 @@ export default {
       }
       return 'red darken-2'
     },
-    position(lat, lng) {
-      let truncLat = Math.floor(lat * 1000000) / 1000000
-      let truncLng = Math.floor(lng * 1000000) / 1000000
-      return `${truncLat}°,${truncLng}°`
-    },
   },
   computed: {
-    user_id() {
-      return USER.user_id
-    },
     root() {
       return window.location.origin
     },
@@ -304,20 +326,29 @@ export default {
       })
       return count
     },
+    sortSettings() {
+      return this.$store.getters.deviceSortSettings
+    },
+    hiddenSettings() {
+      return this.$store.getters.deviceHiddenSettings
+    },
   },
   watch: {
-    statusFilter() {},
+    sortSettings() {
+      this.sortBy = this.sortSettings.sort_by
+      this.sortDesc = this.sortSettings.sort_desc
+    },
     sortBy() {
-      this.$store.dispatch('startPostDeviceSortSetting', {
-        sort_by: this.sortBy,
-        sort_desc: this.sortDesc,
-      })
+      postAndStoreDeviceSortSettings(
+        { sort_by: this.sortBy, sort_desc: this.sortDesc },
+        true,
+      )
     },
     sortDesc() {
-      this.$store.dispatch('startPostDeviceSortSetting', {
-        sort_by: this.sortBy,
-        sort_desc: this.sortDesc,
-      })
+      postAndStoreDeviceSortSettings(
+        { sort_by: this.sortBy, sort_desc: this.sortDesc },
+        true,
+      )
     },
   },
 }

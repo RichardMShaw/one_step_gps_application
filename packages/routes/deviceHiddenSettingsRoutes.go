@@ -17,7 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func deviceHiddenSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
+func deviceHiddenSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	client := app.MongoClient
 	database := client.Database("onestepgps")
 	collection := database.Collection("devicehiddensettings")
@@ -25,13 +25,18 @@ func deviceHiddenSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 
 	mux.Get("/api/device-hidden-settings", func(w http.ResponseWriter, r *http.Request) {
 		var item models.DeviceHiddenSettings
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
 		err := collection.FindOne(ctx, bson.M{
 			"user_id": user_id,
 		}).Decode(&item)
 
 		if err == mongo.ErrNoDocuments {
-			w.WriteHeader(http.StatusNoContent)
+			defaultItem, _ := json.Marshal(bson.M{"hidden_devices": make(map[string]bool)})
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write(defaultItem)
 			return
 		}
 
@@ -69,7 +74,8 @@ func deviceHiddenSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 
 		newItem := models.DeviceHiddenSettings{UserID: user_id, HiddenDevices: hidden_devices}
 
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
 
 		var oldItem models.DeviceHiddenSettings
 		err = collection.FindOneAndUpdate(ctx, bson.M{

@@ -3,9 +3,9 @@ package routes
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/RichardMShaw/one_step_gps_application/packages/app_config"
@@ -16,21 +16,26 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func deviceHeaderSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
+func deviceSortSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	client := app.MongoClient
 	database := client.Database("onestepgps")
-	collection := database.Collection("deviceheadersettings")
+	collection := database.Collection("devicesortsettings")
 	user_id, _ := primitive.ObjectIDFromHex(os.Getenv("USER_ID"))
 
-	mux.Get("/api/device-header-settings", func(w http.ResponseWriter, r *http.Request) {
-		var item models.DeviceHeaderSettings
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	mux.Get("/api/device-sort-settings", func(w http.ResponseWriter, r *http.Request) {
+
+		var item models.DeviceSortSettings
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
 		err := collection.FindOne(ctx, bson.M{
 			"user_id": user_id,
 		}).Decode(&item)
 
-		if err == mongo.ErrNoDocuments {
-			w.WriteHeader(http.StatusNoContent)
+		if err != nil {
+			defaultItem, _ := json.Marshal(bson.M{"sort_by": "", "sort_desc": false})
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write(defaultItem)
 			return
 		}
 
@@ -44,33 +49,21 @@ func deviceHeaderSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		w.Write(jsonItem)
 	})
 
-	mux.Post("/api/device-header-settings", func(w http.ResponseWriter, r *http.Request) {
-
-		defer r.Body.Close()
-		body, err := io.ReadAll(r.Body)
+	mux.Post("/api/device-sort-settings", func(w http.ResponseWriter, r *http.Request) {
+		sort_desc, err := strconv.ParseBool(r.FormValue("sort_desc"))
 		if err != nil {
-			http.Error(w, "Failed to Read", http.StatusBadRequest)
+			http.Error(w, "Invalid Sort Desc", http.StatusBadRequest)
 			return
 		}
-		var f models.DeviceHeaderSettingsFormData
-		json.Unmarshal(body, &f)
 
-		if err != nil {
-			http.Error(w, "Failed to Read", http.StatusBadRequest)
-			return
-		}
-		user_id, err := primitive.ObjectIDFromHex(f.UserID)
-		if err != nil {
-			http.Error(w, "Invalid User Id", http.StatusBadRequest)
-			return
-		}
-		header_settings := f.HeaderSettings
+		sort_by := r.FormValue("sort_by")
 
-		newItem := models.DeviceHeaderSettings{UserID: user_id, HeaderSettings: header_settings}
+		newItem := models.DeviceSortSettings{UserID: user_id, SortBy: sort_by, SortDesc: sort_desc}
 
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
 
-		var oldItem models.DeviceHeaderSettings
+		var oldItem models.DeviceSortSettings
 		err = collection.FindOneAndUpdate(ctx, bson.M{
 			"user_id": user_id,
 		}, bson.M{"$currentDate": bson.M{"updated_at": true}, "$set": newItem}).Decode(&oldItem)
@@ -82,6 +75,7 @@ func deviceHeaderSettingRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			http.Error(w, "Failed to Save Data", http.StatusInternalServerError)
 			return
 		}
+
 		w.WriteHeader(http.StatusOK)
 	})
 

@@ -1,8 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import Device from '@/utils/deviceClass'
-import DeviceSortSettingAPI from '@/utils/deviceSortSettingAPI'
-const { postDeviceSortSetting } = DeviceSortSettingAPI
 import DeviceAPI from '@/utils/deviceAPI'
 const { getDevices } = DeviceAPI
 import {
@@ -16,38 +14,40 @@ export default new Vuex.Store({
   state: {
     mapTypeId: 'terrain',
     getDevicesTimeout: null,
-    deviceStatusFilter: 'ALL',
-    devices: [],
-    hiddenDevices: {},
     layoutModel: false,
     deviceIconModel: { device: null, show: false },
-    deviceHeaderSettings: JSON.parse(
-      JSON.stringify(DEFAULT_DEVICE_HEADER_SETTINGS),
-    ),
-    postDeviceSortSettingTimeout: null,
-    postDeviceFilterSettingTimeout: null,
-    postDeviceHiddenSettingTimeout: null,
-    postDeviceHeaderSettingTimeout: null,
+    devices: [],
+
+    deviceHeaderSettings: null,
+    deviceSortSettings: null,
+    deviceHiddenSettings: null,
+    deviceFilterSettings: null,
   },
   getters: {
     mapTypeId(state) {
       return state.mapTypeId
     },
+    deviceSortSettings(state) {
+      return state.deviceSortSettings
+    },
+    deviceHiddenSettings(state) {
+      return state.deviceHiddenSettings
+    },
     devices(state) {
       return state.devices
     },
     deviceStatusFilter(state) {
-      return state.deviceStatusFilter
+      return state.deviceFilterSettings
     },
     devicesStatusFiltered(state) {
-      let status = state.deviceStatusFilter
+      let status = state.deviceFilterSettings
       if (!status || status == 'ALL') {
         return state.devices
       }
       return state.devices.filter((item) => item.drive_status == status)
     },
     hiddenDevices(state) {
-      return state.hiddenDevices
+      return state.deviceHiddenSettings
     },
     layoutModel(state) {
       return state.layoutModel
@@ -56,6 +56,11 @@ export default new Vuex.Store({
       return state.deviceHeaderSettings
     },
     deviceHeadersFiltered(state) {
+      if (!state.deviceHeaderSettings) {
+        return ALL_DEVICE_HEADERS.filter(
+          (item) => DEFAULT_DEVICE_HEADER_SETTINGS[item.value],
+        )
+      }
       return ALL_DEVICE_HEADERS.filter(
         (item) => state.deviceHeaderSettings[item.value],
       )
@@ -68,9 +73,6 @@ export default new Vuex.Store({
     setDevices(state, value) {
       state.devices = value
     },
-    setDeviceStatusFilter(state, value) {
-      state.deviceStatusFilter = value
-    },
     setGetDevicesTimeout(state, value) {
       state.getDevicesTimeout = value
     },
@@ -78,16 +80,24 @@ export default new Vuex.Store({
       clearTimeout(state.getDevicesTimeout)
     },
     changeHiddenDevice(state, device) {
-      state.hiddenDevices[device.device_id] = !state.hiddenDevices[
-        device.device_id
-      ]
+      if (!state.deviceHiddenSettings) {
+        return
+      }
+      if (state.deviceHiddenSettings[value] == undefined) {
+        let obj = { ...state.deviceHiddenSettings }
+        obj[value] = false
+        state.deviceHiddenSettings = obj
+        return
+      }
+      state.deviceHiddenSettings[device.device_id] = !state
+        .deviceHiddenSettings[device.device_id]
     },
     setHiddenDevices(state, { devices, value }) {
-      let hiddenDevices = state.hiddenDevices
+      let obj = {}
       devices.forEach((item) => {
-        hiddenDevices[item.device_id] = value
-        item.show = !value
+        obj[item.device_id] = value
       })
+      state.deviceHiddenSettings = obj
     },
     setLayoutModel(state, value) {
       state.layoutModel = value
@@ -107,29 +117,17 @@ export default new Vuex.Store({
     setDeviceIconModal(state, value) {
       state.deviceIconModel = value
     },
-    setPostDeviceSortSettingTimeout(state, value) {
-      state.postDeviceSortSettingTimeout = value
+    setDeviceHeaderSettings(state, value) {
+      state.deviceHeaderSettings = value
     },
-    stopPostDeviceSortSettingTimeout(state) {
-      clearTimeout(state.postDeviceSortSettingTimeout)
+    setDeviceSortSettings(state, value) {
+      state.deviceSortSettings = value
     },
-    setPostDeviceFilterSettingTimeout(state, value) {
-      state.postDeviceFilterSettingTimeout = value
+    setDeviceHiddenSettings(state, value) {
+      state.deviceHiddenSettings = value
     },
-    stopPostDeviceFilterSettingTimeout(state) {
-      clearTimeout(state.postDeviceFilterSettingTimeout)
-    },
-    setPostDeviceHiddenSettingTimeout(state, value) {
-      state.postDeviceHiddenSettingTimeout = value
-    },
-    stopPostDeviceHiddenSettingTimeout(state) {
-      clearTimeout(state.postDeviceHiddenSettingTimeout)
-    },
-    setPostDeviceHeaderSettingTimeout(state, value) {
-      state.postDeviceHeaderSettingTimeout = value
-    },
-    stopPostDeviceHeaderSettingTimeout(state) {
-      clearTimeout(state.postDeviceHeaderSettingTimeout)
+    setDeviceFilterSettings(state, value) {
+      state.deviceFilterSettings = value
     },
   },
   actions: {
@@ -159,9 +157,6 @@ export default new Vuex.Store({
     },
     getDevices({ commit, state }) {
       getDevices().then(({ data }) => {
-        data.forEach((item) => {
-          item.show = !state.hiddenDevices[item.device_id]
-        })
         commit('setDevices', data)
       })
     },
@@ -172,7 +167,6 @@ export default new Vuex.Store({
             let devices = []
             data.result_list.forEach((item) => {
               let device = new Device(item)
-              device.show = !state.hiddenDevices[device.device_id]
               devices.push(device)
             })
             commit('setDevices', devices)
@@ -185,61 +179,6 @@ export default new Vuex.Store({
       }
       commit('stopGetDevicesTimeout')
       commit('setGetDevicesTimeout', setTimeout(updateFunc, 0))
-    },
-    stopPostDeviceSortSetting({ commit }) {
-      commit('stopDeviceSortSettingTimeout')
-    },
-    startPostDeviceSortSetting({ commit }, value) {
-      commit('stopDeviceSortSettingTimeout')
-      commit(
-        'setDeviceSortSettingTimeout',
-        setTimeout(() => {
-          let formData = new FormData()
-          formData.append('sort_by', value.sortBy)
-          formData.append('sort_desc', value.sortDesc)
-          postDeviceSortSetting(formData).catch((err) => console.error(err))
-        }, 5000),
-      )
-    },
-    stopPostDeviceFilterSetting({ commit }) {
-      commit('stopDeviceSortSettingTimeout')
-    },
-    startPostDeviceFilterSetting({ commit }, value) {
-      commit('stopDeviceFilterSettingTimeout')
-      commit(
-        'setDeviceFilterSettingTimeout',
-        setTimeout(() => {
-          let formData = new FormData()
-          formData.append('drive_status', value.drive_status)
-          postDeviceFilterSetting(formData).catch((err) => console.error(err))
-        }, 5000),
-      )
-    },
-    stopPostDeviceHiddenSetting({ commit }) {
-      commit('stopDeviceHidden.SettingTimeout')
-    },
-    startPostDeviceHiddenSetting({ commit }, value) {
-      commit('stopDeviceHiddenSettingTimeout')
-      commit(
-        'setDeviceHiddenSettingTimeout',
-        setTimeout(() => {
-          let formJson = { hidden_devices: value }
-          postDeviceFilterSetting(formJson).catch((err) => console.error(err))
-        }, 5000),
-      )
-    },
-    stopPostDeviceHeaderSetting({ commit }) {
-      commit('stopDeviceFilterSettingTimeout')
-    },
-    startPostDeviceHeaderSetting({ commit }, value) {
-      commit('stopDeviceHeaderSettingTimeout')
-      commit(
-        'setDeviceHeaderSettingTimeout',
-        setTimeout(() => {
-          let formJson = { header_settings: value }
-          postDeviceFilterSetting(formJson).catch((err) => console.error(err))
-        }, 5000),
-      )
     },
   },
   modules: {},

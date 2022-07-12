@@ -23,10 +23,10 @@ func Router(app *app_config.AppConfig) http.Handler {
 
 	deviceRoutes(mux, app)
 	deviceIconRoutes(mux, app)
-	deviceSortSettingRoutes(mux, app)
-	deviceFilterSettingRoutes(mux, app)
-	deviceHiddenSettingRoutes(mux, app)
-	deviceHeaderSettingRoutes(mux, app)
+	deviceSortSettingsRoutes(mux, app)
+	deviceFilterSettingsRoutes(mux, app)
+	deviceHiddenSettingsRoutes(mux, app)
+	deviceHeaderSettingsRoutes(mux, app)
 	return mux
 
 }
