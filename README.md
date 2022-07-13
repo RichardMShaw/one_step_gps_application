@@ -1,8 +1,6 @@
 # One Step GPS Application
 
-https://soy-tofu-ca.herokuapp.com/
-
-A fully functioning restaurant page with admin user authentication and online ordering.
+A proof of concept tracking devices using Google Maps.
 
 # Technologies Used
 
