@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"io/fs"
 	"net/http"
 	"strings"
@@ -31,10 +30,10 @@ func Router(app *app_config.AppConfig) http.Handler {
 
 }
 
+//Serves Front-End
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		fmt.Fprintln(w, http.StatusText(http.StatusMethodNotAllowed))
 		return
 	}
 

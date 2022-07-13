@@ -23,10 +23,10 @@ func deviceHeaderSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	user_id, _ := primitive.ObjectIDFromHex(os.Getenv("USER_ID"))
 
 	mux.Get("/api/device-header-settings", func(w http.ResponseWriter, r *http.Request) {
-		var item models.DeviceHeaderSettings
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
+		var item models.DeviceHeaderSettings
 		err := collection.FindOne(ctx, bson.M{
 			"user_id": user_id,
 		}).Decode(&item)
@@ -54,6 +54,7 @@ func deviceHeaderSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			http.Error(w, "Failed to Read", http.StatusBadRequest)
 			return
 		}
+
 		var f models.DeviceHeaderSettingsFormData
 		json.Unmarshal(body, &f)
 

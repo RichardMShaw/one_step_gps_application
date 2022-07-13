@@ -125,17 +125,17 @@ export default {
   },
 
   watch: {
-    // focusDevice() {
-    //   if (
-    //     !this.focusDevice ||
-    //     !this.device ||
-    //     this.focusDevice.device_id != this.id ||
-    //     !this.marker
-    //   ) {
-    //     return
-    //   }
-    //   this.map.setCenter(this.marker.getPosition())
-    // },
+    focusDevice() {
+      if (
+        !this.focusDevice ||
+        !this.device ||
+        this.focusDevice.device_id != this.id ||
+        !this.marker
+      ) {
+        return
+      }
+      this.map.setCenter(this.marker.getPosition())
+    },
     device() {
       if (this.marker) {
         let latLng = { lat: this.lat, lng: this.lng }

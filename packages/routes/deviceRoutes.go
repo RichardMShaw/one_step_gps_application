@@ -3,7 +3,6 @@ package routes
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 
@@ -23,13 +22,13 @@ func deviceRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	mux.Get("/api/device", func(w http.ResponseWriter, r *http.Request) {
 		res, err := client.Do(req)
 		if err != nil {
-			log.Println(err)
+			http.Error(w, "Failed to Fetch Devices from API", http.StatusBadGateway)
 			return
 		}
 		defer res.Body.Close()
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
-			log.Println(err)
+			http.Error(w, "Failed to Prase Devices from API", http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
