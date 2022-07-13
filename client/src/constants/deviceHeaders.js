@@ -1,3 +1,4 @@
+//Constants displaying device information
 const SHOW = {
   text: 'Show',
   align: 'center',
@@ -90,6 +91,7 @@ const ACTIVE_STATE = {
   value: 'active_state',
 }
 
+//Constants are displayed in this order
 const ALL_DEVICE_HEADERS = [
   SHOW,
   ICON,
@@ -110,6 +112,7 @@ const ALL_DEVICE_HEADERS = [
   ACTIVE_STATE,
 ]
 
+//Alphabetized constants for convience
 const ALL_DEVICE_HEADERS_ALPHABETICAL = [...ALL_DEVICE_HEADERS].sort((x, y) => {
   if (x.text.toLowerCase() < y.text.toLowerCase()) {
     return -1
@@ -120,10 +123,12 @@ const ALL_DEVICE_HEADERS_ALPHABETICAL = [...ALL_DEVICE_HEADERS].sort((x, y) => {
   return 0
 })
 
+//Hiding constants which shouldn't be shown while expanding the table to show more device information
 const EXPANDED_HEADERS = [...ALL_DEVICE_HEADERS_ALPHABETICAL].filter((item) => {
   return !item.hideInExpand
 })
 
+//The default layout for the table displaying the devices
 const DEFAULT_DEVICE_HEADER_SETTINGS = {
   show: true,
   icon: true,

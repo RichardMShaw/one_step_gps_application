@@ -17,6 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+//Initalizes and returns a connection to a mongo cluster
 func InitalizeConnection() *mongo.Client {
 	var err error
 	var client *mongo.Client
@@ -30,6 +31,7 @@ func InitalizeConnection() *mongo.Client {
 	return client
 }
 
+//Deletes a long file using the File ID
 func DeleteFile(conn *mongo.Client, file_id primitive.ObjectID, database string) error {
 	bucket, err := gridfs.NewBucket(
 		conn.Database(database),
@@ -44,6 +46,7 @@ func DeleteFile(conn *mongo.Client, file_id primitive.ObjectID, database string)
 	return nil
 }
 
+//Uploads a file to the mongo cluster and returns the File ID associated with it
 func UploadFile(conn *mongo.Client, file multipart.File, filename string, database string) (primitive.ObjectID, error) {
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
@@ -70,6 +73,7 @@ func UploadFile(conn *mongo.Client, file multipart.File, filename string, databa
 	return fileId, nil
 }
 
+//Downloads a file from the mongo cluster and returns the bytes
 func DownloadFile(w http.ResponseWriter, conn *mongo.Client, file_id primitive.ObjectID, database string) ([]byte, error) {
 	db := conn.Database(database)
 	fsFiles := db.Collection("fs.files")

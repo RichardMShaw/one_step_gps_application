@@ -8,6 +8,7 @@
 </template>
 
 <script>
+//Loads and creates Google Maps
 import { Loader } from '@googlemaps/js-api-loader'
 
 export default {

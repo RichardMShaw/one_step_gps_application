@@ -17,6 +17,7 @@ func deviceRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	if err != nil {
 		fmt.Printf("Error : %s", err)
 	}
+
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", key))
 
 	mux.Get("/api/device", func(w http.ResponseWriter, r *http.Request) {

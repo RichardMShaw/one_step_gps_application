@@ -20,6 +20,9 @@ func deviceSortSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	client := app.MongoClient
 	database := client.Database("onestepgps")
 	collection := database.Collection("devicesortsettings")
+
+	//User ID is currently stored in an ENV value for the sake of proof of concept
+	//Would be replaced with proper user authentication and management in further development
 	user_id, _ := primitive.ObjectIDFromHex(os.Getenv("USER_ID"))
 
 	mux.Get("/api/device-sort-settings", func(w http.ResponseWriter, r *http.Request) {
@@ -27,11 +30,13 @@ func deviceSortSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		var item models.DeviceSortSettings
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
+
 		err := collection.FindOne(ctx, bson.M{
 			"user_id": user_id,
 		}).Decode(&item)
 
 		if err != nil {
+			//If user has not saved SortSettings, then return an empty sort_by and falsey sort_desc
 			defaultItem, _ := json.Marshal(bson.M{"sort_by": "", "sort_desc": false})
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
@@ -66,7 +71,9 @@ func deviceSortSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		err = collection.FindOneAndUpdate(ctx, bson.M{
 			"user_id": user_id,
 		}, bson.M{"$currentDate": bson.M{"updated_at": true}, "$set": newItem}).Decode(&oldItem)
+
 		if err == mongo.ErrNoDocuments {
+			//Insert a new if not saved before
 			newItem.CreatedAt = time.Now()
 			newItem.UpdatedAt = newItem.CreatedAt
 			collection.InsertOne(ctx, newItem)

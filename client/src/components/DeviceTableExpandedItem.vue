@@ -21,6 +21,8 @@
 </style>
 
 <script>
+//All data about a device is shown here alphabetically
+//For when the user wants to see more information about a specific device without showing more columns on the table
 import { EXPANDED_HEADERS } from '@/constants/deviceHeaders'
 export default {
   name: 'DeviceTableExpandedItem',

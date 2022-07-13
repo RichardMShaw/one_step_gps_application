@@ -90,6 +90,11 @@
 </style>
 
 <script>
+//Modal for replacing/adding icons to devices
+//*png, *jpg, *jpeg are only allowed files
+//Files have a limit of 512kb
+//An overlay preventing interaction appears saving icon to database
+//Overlay is erased once a response is retrieved
 import DeviceIconAPI from '@/utils/deviceIconAPI'
 const { postAndStoreDeviceIcon } = DeviceIconAPI
 export default {

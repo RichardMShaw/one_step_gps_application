@@ -21,7 +21,7 @@
           show-arrows
         >
           <v-tabs-slider color="yellow"></v-tabs-slider>
-          <v-tab v-for="(tab, i) in tabs" :key="i" @click="filterDevices(tab)">
+          <v-tab v-for="(tab, i) in tabs" :key="i" @click="setFilter(tab)">
             {{ `${tab} (${deviceStatusCount[tab]})` }}
           </v-tab>
           <v-spacer></v-spacer>
@@ -48,7 +48,7 @@
       </td>
     </template>
     <template v-slot:item.icon="{ item }">
-      <v-avatar tile @click.stop="changeIcon(item)">
+      <v-avatar tile @click.stop="setIcon(item)">
         <img :src="`${getIcon(item)}`" />
       </v-avatar>
     </template>
@@ -130,6 +130,10 @@ td {
 </style>
 
 <script>
+//All data relating to devices is shown here
+//Sorting is based on the value from the value keys in the Header Constants
+
+//Routing functions are imported from utility save and fetch data
 import DeviceFilterSettingsAPI from '@/utils/deviceFilterSettingsAPI'
 const {
   getAndStoreDeviceFilterSettings,
@@ -176,6 +180,7 @@ export default {
     tabs: ['ALL', 'DRIVING', 'IDLE', 'STOPPED', 'NOSIGNAL'],
   }),
   mounted() {
+    //Gets and Stores settings if not yet retrieved
     getAndStoreDeviceFilterSettings(true)
     getAndStoreDeviceHeaderSettings(true)
     getAndStoreDeviceHiddenSettings(true)
@@ -183,22 +188,29 @@ export default {
       this.sortBy = this.sortSettings.sort_by
       this.sortDesc = this.sortSettings.sort_desc
     })
+
     this.activeTab = this.tabs.indexOf(this.statusFilter)
   },
   methods: {
-    expand(value) {
-      if (this.expanded[0] == value) {
+    expand(device) {
+      //Expands the table to show more information about the device
+      //Device must be stored in a list
+      if (this.expanded[0] == device) {
         this.expanded = []
         this.$store.commit('setFocusDevice', null)
         return
       }
-      this.expanded = [value]
-      this.$store.commit('setFocusDevice', value)
+      this.expanded = [device]
+      this.$store.commit('setFocusDevice', device)
     },
-    filterDevices(status) {
+    setFilter(status) {
+      //Saves new filter to database. Value is immedately stored locally
       postAndStoreDeviceFilterSettings({ drive_status: status }, true)
     },
     setAllHiddenDevices() {
+      //If 1 more devices are shown, then set the rest to hidden
+      //Otherwise, show all devices
+      //Then save the setting to the database
       if (this.noHiddenDevices) {
         this.$store.commit('setAllHiddenDevices', {
           devices: this.devices,
@@ -212,12 +224,14 @@ export default {
       }
       postDeviceHiddenSettings({ hidden_devices: this.hiddenSettings })
     },
+    setIcon(item) {
+      this.$store.dispatch('showDeviceIconModal', item)
+    },
     changeHiddenDevice(item) {
+      //Makes shown devices hidden and vice-verse
+      //Then saves to the database
       this.$store.commit('changeHiddenDevice', item)
       postDeviceHiddenSettings({ hidden_devices: this.hiddenSettings })
-    },
-    changeIcon(item) {
-      this.$store.dispatch('showDeviceIconModal', item)
     },
     getInt(value) {
       if (isNaN(value)) {
@@ -239,11 +253,14 @@ export default {
     },
     getIcon(item) {
       if (!this.deviceIcons[item.device_id]) {
+        //If icon does not exist, fetch image from the database and store it
+        //A placeholder is immedately stored before fetching to use while waiting for a response
         getAndStoreDeviceIcon(item.device_id)
       }
       return this.deviceIcons[item.device_id]
     },
     getSignalIcon(item) {
+      //Determines what icon the RSSI header will use
       if (!item.online) {
         return 'mdi-wifi-strength-off'
       }
@@ -263,6 +280,7 @@ export default {
       return value ? '#388E3C' : 'grey darken-4'
     },
     getSignalInfo(item) {
+      //Computes RSSI tooltip information
       if (!item.online) {
         return 'Connection: No'
       }
@@ -314,6 +332,7 @@ export default {
       return this.$store.getters.deviceSortSettings
     },
     hiddenSettings() {
+      //If hidden settings haven't been fetched, default to an empty object to prevent errors
       return this.$store.getters.deviceHiddenSettings
         ? this.$store.getters.deviceHiddenSettings
         : {}
@@ -362,6 +381,7 @@ export default {
       this.activeTab = this.tabs.indexOf(this.statusFilter)
     },
     sortBy(newVal, oldVal) {
+      //Save sort settings on change to database if not redundant
       if (oldVal == null || this.sortSettings.sort_by == this.sortBy) {
         return
       }
@@ -373,6 +393,7 @@ export default {
       })
     },
     sortDesc(newVal, oldVal) {
+      //Save sort settings on change to database if not redundant
       if (oldVal == null || this.sortSettings.sort_desc == this.sortDesc) {
         return
       }

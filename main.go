@@ -14,8 +14,10 @@ import (
 )
 
 func main() {
+	//Struct to pass through routes for data management
 	var app app_config.AppConfig
 
+	//Retrieves data from .env for development
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Error loading .env file")

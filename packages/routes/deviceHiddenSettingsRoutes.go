@@ -21,6 +21,9 @@ func deviceHiddenSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	client := app.MongoClient
 	database := client.Database("onestepgps")
 	collection := database.Collection("devicehiddensettings")
+
+	//User ID is currently stored in an ENV value for the sake of proof of concept
+	//Would be replaced with proper user authentication and management in further development
 	user_id, _ := primitive.ObjectIDFromHex(os.Getenv("USER_ID"))
 
 	mux.Get("/api/device-hidden-settings", func(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +36,7 @@ func deviceHiddenSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		}).Decode(&item)
 
 		if err == mongo.ErrNoDocuments {
+			//If user has not saved HiddenSettings, then return an empty map[string]bool
 			defaultItem, _ := json.Marshal(bson.M{"hidden_devices": make(map[string]bool)})
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
@@ -58,6 +62,7 @@ func deviceHiddenSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			http.Error(w, "Failed to Read", http.StatusBadRequest)
 			return
 		}
+
 		var f models.DeviceHiddenSettingsFormData
 		json.Unmarshal(body, &f)
 
@@ -78,6 +83,7 @@ func deviceHiddenSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			"user_id": user_id,
 		}, bson.M{"$currentDate": bson.M{"updated_at": true}, "$set": newItem}).Decode(&oldItem)
 		if err == mongo.ErrNoDocuments {
+			//Insert a new if not saved before
 			newItem.CreatedAt = time.Now()
 			newItem.UpdatedAt = newItem.CreatedAt
 			collection.InsertOne(ctx, newItem)

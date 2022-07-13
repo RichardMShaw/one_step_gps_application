@@ -14,6 +14,7 @@
 </template>
 
 <script>
+//Component loads google maps using devices which are filtered based on their status and if not hidden
 import GoogleMapsLoader from './GoogleMapsLoader'
 import GoogleMapsDeviceMarker from './GoogleMapsDeviceMarker'
 

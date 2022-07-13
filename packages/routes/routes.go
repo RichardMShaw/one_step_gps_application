@@ -20,6 +20,7 @@ func Router(app *app_config.AppConfig) http.Handler {
 	httpFS := http.FileServer(http.FS(staticFS))
 	mux.Handle("/static/*", httpFS)
 
+	//Routes are divided into their own files to handle their own routing and functionality
 	deviceRoutes(mux, app)
 	deviceIconRoutes(mux, app)
 	deviceSortSettingsRoutes(mux, app)

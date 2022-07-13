@@ -19,6 +19,7 @@
 </style>
 
 <script>
+//Functionality for the markers tracking devices on Google Maps
 import DeviceIconAPI from '@/utils/deviceIconAPI'
 const { getAndStoreDeviceIcon } = DeviceIconAPI
 import { faLocationArrow } from '@fortawesome/free-solid-svg-icons'
@@ -56,11 +57,15 @@ export default {
   methods: {
     getIcon() {
       if (!this.deviceIcons[this.id]) {
+        //If icon does not exist, fetch image from database and store it
+        //A placeholder is immedately stored before fetching to use while waiting for a response
         getAndStoreDeviceIcon(this.id)
       }
       return this.deviceIcons[this.id]
     },
     appendToInfoWindow() {
+      //Appends the template component to the InfoWindow
+      //InfoWindow may not immedately render and a timeout is used to ensure it gets appended once it appears
       this.$nextTick(() => {
         let elem = document.getElementById(`${this.id}_info_id`)
         let templateInfo = this.templateInfo
@@ -72,11 +77,16 @@ export default {
         }
       })
     },
+
     openInfoWindow() {
       const { InfoWindow } = this.google.maps
+      //Opens InfoWindow if it does not already exist or is closed
+      //Otherwise, do nothing
       if (this.infoWindow && this.infoWindow.getMap() != null) {
         return
       }
+
+      //Creates an empty div with an id to append the templateInfo element
       this.infoWindow = new InfoWindow({
         content: `<div id="${this.id}_info_id"></div>`,
       })
@@ -108,6 +118,7 @@ export default {
       return this.device.lng
     },
     angle() {
+      //+315 is used to correct the direction of the icon
       return this.device.angle + 315
     },
     icon() {
@@ -128,6 +139,7 @@ export default {
 
   watch: {
     focusDevice() {
+      //When a device is expanded on the DeviceTable, the map centers on the marker
       if (
         !this.focusDevice ||
         !this.device ||
@@ -139,6 +151,7 @@ export default {
       this.map.setCenter(this.marker.getPosition())
     },
     device() {
+      //Updates marker and icon when device changes
       if (this.marker) {
         let latLng = { lat: this.lat, lng: this.lng }
         this.marker.setPosition(latLng)
@@ -148,6 +161,7 @@ export default {
   },
 
   mounted() {
+    //Stores template element for appending to InfoWindow once it opens
     this.templateInfo = document.getElementById(`${this.id}_info_window`)
     const { Marker } = this.google.maps
     let position = { lat: this.lat, lng: this.lng }

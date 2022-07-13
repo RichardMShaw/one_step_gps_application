@@ -2,8 +2,17 @@ import axios from 'axios'
 import store from '@/store'
 import { DEFAULT_DEVICE_HEADER_SETTINGS } from '@/constants/deviceHeaders.js'
 
+//Prevents excessiving post requests.
+//Set to true when post request starts and false after a response
 let posting = false
 
+//Utility object to handle all API requests
+//All functions return promise to use .then() in all cases
+
+//getAndStore functions immedately store data once retreieved
+//getAndStore has an option to not fetch if data has already been saved to store
+
+//postAndStore functions have the option to store data immedately before a response is returned or afterward
 const DeviceHeaderSettingsAPI = {
   getDeviceHeaderSettings: () => axios.get(`/api/device-header-settings`),
   getAndStoreDeviceHeaderSettings: (isInit = false) => {

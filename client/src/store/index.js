@@ -1,3 +1,6 @@
+//Most State management is handled here
+//Allows for manipulating data without making components tightly coupled
+
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { MarkerClusterer } from '@googlemaps/markerclusterer'
@@ -90,23 +93,24 @@ export default new Vuex.Store({
     },
   },
   mutations: {
-    setFocusDevice(state, value) {
-      state.focusDevice = value
+    setFocusDevice(state, device) {
+      state.focusDevice = device
     },
-    newMarkerCluster(state, value) {
-      state.markerCluster = new MarkerClusterer({ map: value.map })
+    newMarkerCluster(state, config) {
+      state.markerCluster = new MarkerClusterer({ map: config.map })
     },
-    setDeviceIcon(state, value) {
-      if (state.deviceIcons[value.device_id]) {
+    setDeviceIcon(state, { device_id, icon }) {
+      if (state.deviceIcons[device_id]) {
+        //Adding new key to object. Resetting reactivity
         let obj = { ...state.deviceIcons }
-        obj[value.device_id] = value.icon
+        obj[device_id] = icon
         state.deviceIcons = obj
         return
       }
-      state.deviceIcons[value.device_id] = value.icon
+      state.deviceIcons[device_id] = icon
     },
-    setDevices(state, value) {
-      state.devices = value
+    setDevices(state, list) {
+      state.devices = list
     },
     setGetDevicesTimeout(state, value) {
       state.getDevicesTimeout = value
@@ -119,6 +123,7 @@ export default new Vuex.Store({
         return
       }
       if (state.deviceHiddenSettings[device.device_id] == undefined) {
+        //Adding new key to object. Resetting reactivity
         let obj = { ...state.deviceHiddenSettings }
         obj[device.device_id] = false
         state.deviceHiddenSettings = obj
@@ -137,6 +142,7 @@ export default new Vuex.Store({
     },
     changeDeviceHeaderSetting(state, value) {
       if (state.deviceHeaderSettings[value] == undefined) {
+        //Adding new key to object. Resetting reactivity
         let obj = { ...state.deviceHeaderSettings }
         obj[value] = true
         state.deviceHeaderSettings = obj
@@ -157,14 +163,6 @@ export default new Vuex.Store({
       state.deviceSortSettings = value
     },
     setDeviceHiddenSettings(state, value) {
-      if (value) {
-        let devices = state.devices
-        if (devices) {
-          devices.forEach((item) => {
-            item.show = !value[item.device_id]
-          })
-        }
-      }
       state.deviceHiddenSettings = value
     },
     setDeviceFilterSettings(state, value) {
@@ -185,6 +183,7 @@ export default new Vuex.Store({
       commit('setDeviceHeaderSettings', value)
     },
     setDefaultDeviceHeaderSettings({ commit }) {
+      //DeviceHeadersSettings values can be modified, so a copy of the defaults must be made rather than used directly
       let defaultHeaders = JSON.parse(
         JSON.stringify(DEFAULT_DEVICE_HEADER_SETTINGS),
       )
@@ -202,6 +201,8 @@ export default new Vuex.Store({
       })
     },
     startGetDevicesTimeout({ commit, state }) {
+      //Anonymous function for Timeout to call every 20 seconds
+      //Fetches fresh device data from OneStepGPS
       const updateFunc = () => {
         getDevices()
           .then(({ data }) => {
@@ -218,6 +219,7 @@ export default new Vuex.Store({
             commit('setGetDevicesTimeout', setTimeout(updateFunc, 20000))
           })
       }
+      //Stops timeout to prevent multiple gets
       commit('stopGetDevicesTimeout')
       commit('setGetDevicesTimeout', setTimeout(updateFunc, 0))
     },

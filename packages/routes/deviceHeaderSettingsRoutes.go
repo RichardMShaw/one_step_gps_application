@@ -20,6 +20,9 @@ func deviceHeaderSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	client := app.MongoClient
 	database := client.Database("onestepgps")
 	collection := database.Collection("deviceheadersettings")
+
+	//User ID is currently stored in an ENV value for the sake of proof of concept
+	//Would be replaced with proper user authentication and management in further development
 	user_id, _ := primitive.ObjectIDFromHex(os.Getenv("USER_ID"))
 
 	mux.Get("/api/device-header-settings", func(w http.ResponseWriter, r *http.Request) {
@@ -32,6 +35,7 @@ func deviceHeaderSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		}).Decode(&item)
 
 		if err == mongo.ErrNoDocuments {
+			//If user has not saved HiddenSettings, then return nothing
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
@@ -74,6 +78,7 @@ func deviceHeaderSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			"user_id": user_id,
 		}, bson.M{"$currentDate": bson.M{"updated_at": true}, "$set": newItem}).Decode(&oldItem)
 		if err == mongo.ErrNoDocuments {
+			//Insert a new if not saved before
 			newItem.CreatedAt = time.Now()
 			newItem.UpdatedAt = newItem.CreatedAt
 			collection.InsertOne(ctx, newItem)

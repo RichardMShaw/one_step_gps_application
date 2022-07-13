@@ -75,6 +75,9 @@
 </style>
 
 <script>
+//Modal created for modifing the table headers on DeviceTable
+//Shows how the table looks beneath the overlay
+//Settings only save when the "Save" button is clicked
 import DeviceHeaderSettingsAPI from '@/utils/deviceHeaderSettingsAPI'
 const { postAndStoreDeviceHeaderSettings } = DeviceHeaderSettingsAPI
 import { ALL_DEVICE_HEADERS } from '@/constants/deviceHeaders'
