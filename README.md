@@ -1,4 +1,4 @@
-# Rohst
+# One Step GPS Application
 
 https://soy-tofu-ca.herokuapp.com/
 
