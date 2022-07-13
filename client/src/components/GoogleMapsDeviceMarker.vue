@@ -19,6 +19,8 @@
 </style>
 
 <script>
+import DeviceIconAPI from '@/utils/deviceIconAPI'
+const { getAndStoreDeviceIcon } = DeviceIconAPI
 import { faLocationArrow } from '@fortawesome/free-solid-svg-icons'
 import COLORS from '@/constants/colors'
 import Device from '@/utils/deviceClass'
