@@ -23,13 +23,14 @@ func main() {
 
 	app.MongoClient = db.InitalizeConnection()
 
-	envPort := os.Getenv("PORT")
-	fmt.Println(envPort)
-	if len(envPort) == 0 {
-		envPort = "localhost:8000"
+	port := os.Getenv("PORT")
+	fmt.Println(port)
+	if len(port) == 0 {
+		port = "8000"
 	}
+	address := fmt.Sprintf("%s:%s", "0.0.0.0", port)
 	srv := &http.Server{
-		Addr:    envPort,
+		Addr:    address,
 		Handler: routes.Router(&app),
 	}
 	srv.ListenAndServe()
