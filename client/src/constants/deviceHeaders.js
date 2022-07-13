@@ -1,6 +1,6 @@
 const SHOW = {
   text: 'Show',
-  align: 'start',
+  align: 'center',
   value: 'show',
   sortable: false,
   hideInExpand: true,

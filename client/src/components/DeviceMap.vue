@@ -1,6 +1,5 @@
 <template>
   <GoogleMapsLoader :mapConfig="mapConfig" :apiKey="api">
-    // insert your google maps api key to render styled map
     <template slot-scope="{ google, map }" v-if="devices && markerCluster">
       <GoogleMapsDeviceMarker
         v-for="device in devices"

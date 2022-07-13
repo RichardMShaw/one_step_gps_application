@@ -3,13 +3,13 @@
     :headers="headers"
     :items="devices"
     :expanded="expanded"
+    :item-class="getRowBackground"
+    :sort-by.sync="sortBy"
+    :sort-desc.sync="sortDesc"
     @click:row="expand"
     item-key="device_id"
     hide-default-footer
-    class="elevation-1"
-    :item-class="itemRowBackground"
-    :sort-by.sync="sortBy"
-    :sort-desc.sync="sortDesc"
+    class="elevation-1 table-settings"
   >
     <template v-slot:top>
       <div style="display: flex;">
@@ -22,7 +22,7 @@
         >
           <v-tabs-slider color="yellow"></v-tabs-slider>
           <v-tab v-for="(tab, i) in tabs" :key="i" @click="filterDevices(tab)">
-            {{ `${tab} (${device_status_count[tab]})` }}
+            {{ `${tab} (${deviceStatusCount[tab]})` }}
           </v-tab>
           <v-spacer></v-spacer>
           <v-btn height="100%" dark @click="$store.dispatch('showLayoutModel')">
@@ -40,7 +40,7 @@
     <template v-slot:item.show="{ item }">
       <td class="show-icon-td">
         <v-simple-checkbox
-          v-model="item.show"
+          :value="!hiddenSettings[item.device_id]"
           @click="changeHiddenDevice(item)"
           v-ripple="false"
           color="blue"
@@ -48,7 +48,7 @@
       </td>
     </template>
     <template v-slot:item.icon="{ item }">
-      <v-avatar @click.stop="changeIcon(item)">
+      <v-avatar tile @click.stop="changeIcon(item)">
         <img :src="`${getIcon(item)}`" />
       </v-avatar>
     </template>
@@ -59,10 +59,10 @@
       {{ item.odometer_km_display }}
     </template>
     <template v-slot:item.speed_mph="{ item }">
-      {{ convertToInt(item.speed_mph) }}
+      {{ getInt(item.speed_mph) }}
     </template>
     <template v-slot:item.speed_kph="{ item }">
-      {{ convertToInt(item.speed_kph) }}
+      {{ getInt(item.speed_kph) }}
     </template>
     <template v-slot:item.drive_status="{ item }">
       {{ item.drive_status_display }}
@@ -94,6 +94,22 @@
 </template>
 
 <style>
+.table-settings {
+  display: flex;
+  flex-direction: column;
+  max-width: calc(50% - 56px);
+}
+.table-settings > .v-data-table__wrapper {
+  overflow-y: auto !important;
+  flex-grow: 1;
+  flex-basis: 0;
+}
+th {
+  white-space: nowrap;
+}
+td {
+  white-space: nowrap;
+}
 .driving-row {
   background-color: #80cbc4 !important;
 }
@@ -109,6 +125,7 @@
 .show-icon-td {
   background-color: white;
   border-right: rgb(56, 56, 56);
+  text-align: center;
 }
 </style>
 
@@ -153,8 +170,7 @@ export default {
       STOPPED: 'red darken-4',
       NOSIGNAL: 'grey darken-4',
     },
-    showDefaultIcon: false,
-    sortBy: '',
+    sortBy: null,
     sortDesc: null,
     activeTab: 0,
     tabs: ['ALL', 'DRIVING', 'IDLE', 'STOPPED', 'NOSIGNAL'],
@@ -163,18 +179,24 @@ export default {
     getAndStoreDeviceFilterSettings(true)
     getAndStoreDeviceHeaderSettings(true)
     getAndStoreDeviceHiddenSettings(true)
-    getAndStoreDeviceSortSettings(true)
+    getAndStoreDeviceSortSettings(true).then(() => {
+      this.sortBy = this.sortSettings.sort_by
+      this.sortDesc = this.sortSettings.sort_desc
+    })
     this.activeTab = this.tabs.indexOf(this.statusFilter)
   },
   methods: {
-    getIcon(item) {
-      if (!this.deviceIcons[item.device_id]) {
-        getAndStoreDeviceIcon(item.device_id)
+    expand(value) {
+      if (this.expanded[0] == value) {
+        this.expanded = []
+        this.$store.commit('setFocusDevice', null)
+        return
       }
-      return this.deviceIcons[item.device_id]
+      this.expanded = [value]
+      this.$store.commit('setFocusDevice', value)
     },
-    changeIcon(item) {
-      this.$store.dispatch('showDeviceIconModal', item)
+    filterDevices(status) {
+      postAndStoreDeviceFilterSettings({ drive_status: status }, true)
     },
     setAllHiddenDevices() {
       if (this.noHiddenDevices) {
@@ -194,7 +216,16 @@ export default {
       this.$store.commit('changeHiddenDevice', item)
       postDeviceHiddenSettings({ hidden_devices: this.hiddenSettings })
     },
-    itemRowBackground(item) {
+    changeIcon(item) {
+      this.$store.dispatch('showDeviceIconModal', item)
+    },
+    getInt(value) {
+      if (isNaN(value)) {
+        return 'UNKNOWN'
+      }
+      return Math.floor(value)
+    },
+    getRowBackground(item) {
       switch (item.drive_status) {
         case 'DRIVING':
           return 'driving-row'
@@ -206,21 +237,11 @@ export default {
           return 'nosignal-row'
       }
     },
-    filterDevices(status) {
-      postAndStoreDeviceFilterSettings({ drive_status: status }, true)
-    },
-    expand(value) {
-      if (this.expanded[0] == value) {
-        this.expanded = []
-        return
+    getIcon(item) {
+      if (!this.deviceIcons[item.device_id]) {
+        getAndStoreDeviceIcon(item.device_id)
       }
-      this.expanded = [value]
-    },
-    convertToInt(value) {
-      if (isNaN(value)) {
-        return 'UNKNOWN'
-      }
-      return Math.floor(value)
+      return this.deviceIcons[item.device_id]
     },
     getSignalIcon(item) {
       if (!item.online) {
@@ -277,23 +298,53 @@ export default {
     },
   },
   computed: {
-    deviceIcons() {
-      return this.$store.getters.deviceIcons
-    },
     headers() {
       return this.$store.getters.deviceHeadersFiltered
     },
+    unfilteredDevices() {
+      return this.$store.getters.devices
+    },
     devices() {
-      return this.$store.getters.devicesStatusFiltered
+      return this.$store.getters.devicesFilterByStatus
+    },
+    statusFilter() {
+      return this.$store.getters.deviceStatusFilter
+    },
+    sortSettings() {
+      return this.$store.getters.deviceSortSettings
+    },
+    hiddenSettings() {
+      return this.$store.getters.deviceHiddenSettings
+        ? this.$store.getters.deviceHiddenSettings
+        : {}
+    },
+    deviceIcons() {
+      return this.$store.getters.deviceIcons
+    },
+    tabColor() {
+      if (!this.statusFilter) {
+        return this.tabColors['ALL']
+      }
+      return this.tabColors[this.statusFilter]
+    },
+    deviceStatusCount() {
+      let list = this.unfilteredDevices
+      let count = { ALL: 0, DRIVING: 0, IDLE: 0, STOPPED: 0, NOSIGNAL: 0 }
+      list.forEach((item) => {
+        count['ALL']++
+        count[item.drive_status]++
+      })
+      return count
     },
     noHiddenDevices() {
-      let devices = this.devices
-      let len = this.devices.length
-      if (len < 1) {
+      let hidden = this.hiddenSettings
+      if (Object.keys(hidden).length < 1) {
         return true
       }
+      let devices = this.devices
+      let len = devices.length
       for (let i = 0; i < len; i++) {
-        if (devices[i].show) {
+        if (!hidden[devices[i].device_id]) {
           return true
         }
       }
@@ -305,50 +356,32 @@ export default {
       }
       return 'mdi-eye-off'
     },
-    statusFilter() {
-      return this.$store.getters.deviceStatusFilter
-    },
-    unfilteredDevices() {
-      return this.$store.getters.devices
-    },
-    tabColor() {
-      if (!this.statusFilter) {
-        return this.tabColors['ALL']
-      }
-      return this.tabColors[this.statusFilter]
-    },
-    device_status_count() {
-      let list = this.unfilteredDevices
-      let count = { ALL: 0, DRIVING: 0, IDLE: 0, STOPPED: 0, NOSIGNAL: 0 }
-      list.forEach((item) => {
-        count['ALL']++
-        count[item.drive_status]++
-      })
-      return count
-    },
-    sortSettings() {
-      return this.$store.getters.deviceSortSettings
-    },
-    hiddenSettings() {
-      return this.$store.getters.deviceHiddenSettings
-    },
   },
   watch: {
     statusFilter() {
       this.activeTab = this.tabs.indexOf(this.statusFilter)
     },
-    sortSettings() {
-      this.sortBy = this.sortSettings.sort_by
-      this.sortDesc = this.sortSettings.sort_desc
+    sortBy(newVal, oldVal) {
+      if (oldVal == null || this.sortSettings.sort_by == this.sortBy) {
+        return
+      }
+      this.$nextTick().then(() => {
+        postAndStoreDeviceSortSettings(
+          { sort_by: this.sortBy, sort_desc: this.sortDesc },
+          true,
+        )
+      })
     },
     sortDesc(newVal, oldVal) {
       if (oldVal == null || this.sortSettings.sort_desc == this.sortDesc) {
         return
       }
-      postAndStoreDeviceSortSettings(
-        { sort_by: this.sortBy, sort_desc: this.sortDesc },
-        true,
-      )
+      this.$nextTick().then(() => {
+        postAndStoreDeviceSortSettings(
+          { sort_by: this.sortBy, sort_desc: this.sortDesc },
+          true,
+        )
+      })
     },
   },
 }

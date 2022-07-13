@@ -7,7 +7,10 @@ const DeviceHiddenSettingsAPI = {
   getDeviceHiddenSettings: () => axios.get(`/api/device-hidden-settings`),
   getAndStoreDeviceHiddenSettings: (isInit = false) => {
     if (isInit && store.state.deviceHiddenSettings) {
-      return
+      let promise = new Promise((resolve) => {
+        resolve()
+      })
+      return promise
     }
     return axios.get(`/api/device-hidden-settings`).then(({ data }) => {
       if (data.hidden_devices) {
@@ -19,7 +22,10 @@ const DeviceHiddenSettingsAPI = {
   },
   postDeviceHiddenSettings: (data) => {
     if (posting) {
-      return
+      let promise = new Promise((resolve) => {
+        resolve()
+      })
+      return promise
     }
     posting = true
 
@@ -42,7 +48,10 @@ const DeviceHiddenSettingsAPI = {
     }
 
     if (posting) {
-      return
+      let promise = new Promise((resolve) => {
+        resolve()
+      })
+      return promise
     }
     posting = true
     return axios

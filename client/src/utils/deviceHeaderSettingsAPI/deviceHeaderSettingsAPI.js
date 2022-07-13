@@ -8,7 +8,10 @@ const DeviceHeaderSettingsAPI = {
   getDeviceHeaderSettings: () => axios.get(`/api/device-header-settings`),
   getAndStoreDeviceHeaderSettings: (isInit = false) => {
     if (isInit && store.state.deviceHeaderSettings) {
-      return
+      let promise = new Promise((resolve) => {
+        resolve()
+      })
+      return promise
     }
     return axios.get(`/api/device-header-settings`).then(({ data }) => {
       if (data) {
@@ -26,7 +29,10 @@ const DeviceHeaderSettingsAPI = {
     }
 
     if (posting) {
-      return
+      let promise = new Promise((resolve) => {
+        resolve()
+      })
+      return promise
     }
     posting = true
 

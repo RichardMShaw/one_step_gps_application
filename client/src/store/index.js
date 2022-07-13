@@ -26,8 +26,13 @@ export default new Vuex.Store({
     deviceHiddenSettings: null,
     deviceFilterSettings: null,
     markerCluster: null,
+
+    focusDevice: null,
   },
   getters: {
+    focusDevice(state) {
+      return state.focusDevice
+    },
     markerCluster(state) {
       return state.markerCluster
     },
@@ -49,15 +54,20 @@ export default new Vuex.Store({
     deviceStatusFilter(state) {
       return state.deviceFilterSettings
     },
-    devicesStatusFiltered(state) {
+    devicesFilterByStatus(state) {
       let status = state.deviceFilterSettings
       if (!status || status == 'ALL') {
         return state.devices
       }
       return state.devices.filter((item) => item.drive_status == status)
     },
-    hiddenDevices(state) {
-      return state.deviceHiddenSettings
+    devicesFilterByStatusAndHidden(state, getters) {
+      let filteredDevices = getters.devicesFilterByStatus
+      let hidden = getters.deviceHiddenSettings
+      if (!hidden) {
+        return filteredDevices
+      }
+      return filteredDevices.filter((item) => !hidden[item.device_id])
     },
     layoutModel(state) {
       return state.layoutModel
@@ -80,8 +90,11 @@ export default new Vuex.Store({
     },
   },
   mutations: {
-    newMarkerCluster(state, { map }) {
-      state.markerCluster = new MarkerClusterer({ map: map })
+    setFocusDevice(state, value) {
+      state.focusDevice = value
+    },
+    newMarkerCluster(state, value) {
+      state.markerCluster = new MarkerClusterer({ map: value.map })
     },
     setDeviceIcon(state, value) {
       if (state.deviceIcons[value.device_id]) {
@@ -116,7 +129,6 @@ export default new Vuex.Store({
     },
     setAllHiddenDevices(state, { devices, value }) {
       devices.forEach((item) => {
-        item.show = !value
         state.deviceHiddenSettings[item.device_id] = value
       })
     },
@@ -186,12 +198,6 @@ export default new Vuex.Store({
     },
     getDevices({ commit, state }) {
       getDevices().then(({ data }) => {
-        let hiddenSettings = state.deviceHiddenSettings
-          ? state.deviceHiddenSettings
-          : {}
-        data.result_list.forEach((item) => {
-          item.show = !hiddenSettings[item.device_id]
-        })
         commit('setDevices', data)
       })
     },
@@ -200,12 +206,8 @@ export default new Vuex.Store({
         getDevices()
           .then(({ data }) => {
             let devices = []
-            let hiddenSettings = state.deviceHiddenSettings
-              ? state.deviceHiddenSettings
-              : {}
             data.result_list.forEach((item) => {
               let device = new Device(item)
-              device.show = !hiddenSettings[device.device_id]
               devices.push(device)
             })
             commit('setDevices', devices)

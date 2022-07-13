@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -31,40 +30,47 @@ func InitalizeConnection() *mongo.Client {
 	return client
 }
 
-func DeleteFile(conn *mongo.Client, file_id primitive.ObjectID, database string) {
+func DeleteFile(conn *mongo.Client, file_id primitive.ObjectID, database string) error {
 	bucket, err := gridfs.NewBucket(
 		conn.Database(database),
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	bucket.Delete(file_id)
+	err = bucket.Delete(file_id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func UploadFile(conn *mongo.Client, file multipart.File, filename string, database string) primitive.ObjectID {
+func UploadFile(conn *mongo.Client, file multipart.File, filename string, database string) (primitive.ObjectID, error) {
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		log.Fatal(err)
+		return primitive.NilObjectID, err
 	}
 	bucket, err := gridfs.NewBucket(
 		conn.Database(database),
 	)
 	if err != nil {
-		log.Fatal(err)
+		return primitive.NilObjectID, err
 	}
 	uploadStream, err := bucket.OpenUploadStream(
 		filename,
 	)
 	if err != nil {
-		log.Fatal(err)
+		return primitive.NilObjectID, err
 	}
 	defer uploadStream.Close()
-	uploadStream.Write(data)
+	_, err = uploadStream.Write(data)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
 	fileId := uploadStream.FileID.(primitive.ObjectID)
-	return fileId
+	return fileId, nil
 }
 
-func DownloadFile(w http.ResponseWriter, conn *mongo.Client, file_id primitive.ObjectID, database string) {
+func DownloadFile(w http.ResponseWriter, conn *mongo.Client, file_id primitive.ObjectID, database string) ([]byte, error) {
 	db := conn.Database(database)
 	fsFiles := db.Collection("fs.files")
 
@@ -76,15 +82,16 @@ func DownloadFile(w http.ResponseWriter, conn *mongo.Client, file_id primitive.O
 		"_id": file_id,
 	}).Decode(&results)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	bucket, _ := gridfs.NewBucket(db)
-
+	bucket, err := gridfs.NewBucket(db)
+	if err != nil {
+		return nil, err
+	}
 	var buf bytes.Buffer
 	_, err = bucket.DownloadToStream(file_id, &buf)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(buf.Bytes())
+	return buf.Bytes(), nil
 }

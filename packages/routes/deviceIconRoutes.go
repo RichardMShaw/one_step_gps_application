@@ -34,7 +34,13 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			return
 		}
 
-		db.DownloadFile(w, client, item.FileID, "onestepgps")
+		file, err := db.DownloadFile(w, client, item.FileID, "onestepgps")
+		if err != nil {
+			http.Error(w, "Failed to Download Icon", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(file)
 	})
 
 	mux.Post("/api/device-icon", func(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +66,11 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			return
 		}
 
-		file_id := db.UploadFile(client, file, handler.Filename, "onestepgps")
+		file_id, err := db.UploadFile(client, file, handler.Filename, "onestepgps")
+		if err != nil {
+			http.Error(w, "Failed to Upload Icon", http.StatusInternalServerError)
+			return
+		}
 		device_id := r.FormValue("device_id")
 
 		newItem := models.DeviceIcon{FileID: file_id, DeviceID: device_id}
@@ -81,6 +91,10 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			http.Error(w, "Failed to Save Data", http.StatusInternalServerError)
 			return
 		}
-		db.DeleteFile(client, oldItem.FileID, "onestepgps")
+		err = db.DeleteFile(client, oldItem.FileID, "onestepgps")
+		if err != nil {
+			http.Error(w, "Failed to Delete Previous Icon", http.StatusInternalServerError)
+			return
+		}
 	})
 }

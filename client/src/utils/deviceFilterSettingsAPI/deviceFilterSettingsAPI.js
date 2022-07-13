@@ -7,7 +7,10 @@ const DeviceFilterSettingsAPI = {
   getDeviceFilterSettings: () => axios.get(`/api/device-filter-settings`),
   getAndStoreDeviceFilterSettings: (isInit = false) => {
     if (isInit && store.state.deviceFilterSettings) {
-      return
+      let promise = new Promise((resolve) => {
+        resolve()
+      })
+      return promise
     }
     return axios.get(`/api/device-filter-settings`).then(({ data }) => {
       if (data) {
@@ -21,7 +24,10 @@ const DeviceFilterSettingsAPI = {
     }
 
     if (posting) {
-      return
+      let promise = new Promise((resolve) => {
+        resolve()
+      })
+      return promise
     }
     posting = true
 

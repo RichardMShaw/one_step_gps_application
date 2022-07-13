@@ -28,6 +28,11 @@
   background: linear-gradient(220deg, #1976d2 75%, #ffffff 60%);
 }
 </style>
+<style>
+html {
+  overflow-y: hidden !important;
+}
+</style>
 <script>
 export default {
   name: 'App',

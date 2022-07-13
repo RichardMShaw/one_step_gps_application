@@ -53,10 +53,10 @@ export default {
   }),
   computed: {
     devices() {
-      return this.$store.getters.devicesStatusFiltered
+      return this.$store.getters.devicesFilterByStatus
     },
     shownDevices() {
-      return this.devices.filter((item) => item.show)
+      return this.$store.getters.devicesFilterByStatusAndHidden
     },
     layoutModel() {
       return this.$store.getters.layoutModel

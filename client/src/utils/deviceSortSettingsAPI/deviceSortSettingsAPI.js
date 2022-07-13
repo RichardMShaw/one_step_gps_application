@@ -7,7 +7,10 @@ const DeviceSortSettingsAPI = {
   getDeviceSortSettings: () => axios.get(`/api/device-sort-settings`),
   getAndStoreDeviceSortSettings: (isInit = false) => {
     if (isInit && store.state.deviceSortSettings) {
-      return
+      let promise = new Promise((resolve) => {
+        resolve()
+      })
+      return promise
     }
     return axios.get(`/api/device-sort-settings`).then(({ data }) => {
       if (data) {
@@ -27,6 +30,9 @@ const DeviceSortSettingsAPI = {
     }
 
     if (posting) {
+      let promise = new Promise((resolve) => {
+        resolve()
+      })
       return
     }
     posting = true

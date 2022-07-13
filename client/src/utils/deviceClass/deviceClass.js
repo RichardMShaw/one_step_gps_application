@@ -1,4 +1,7 @@
 const convertSecondsToTime = (value) => {
+  if (value < 1) {
+    return '0 s'
+  }
   let totalSeconds = value
 
   let days = Math.floor(totalSeconds / (24 * 3600))

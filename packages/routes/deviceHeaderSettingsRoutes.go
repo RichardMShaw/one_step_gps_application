@@ -58,7 +58,7 @@ func deviceHeaderSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		json.Unmarshal(body, &f)
 
 		if err != nil {
-			http.Error(w, "Failed to Read", http.StatusBadRequest)
+			http.Error(w, "Failed to Unmarshal", http.StatusBadRequest)
 			return
 		}
 		header_settings := f.HeaderSettings

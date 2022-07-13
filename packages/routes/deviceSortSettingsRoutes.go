@@ -62,7 +62,6 @@ func deviceSortSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-
 		var oldItem models.DeviceSortSettings
 		err = collection.FindOneAndUpdate(ctx, bson.M{
 			"user_id": user_id,

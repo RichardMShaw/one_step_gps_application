@@ -24,7 +24,7 @@
         </div>
         <v-divider class="border-color"></v-divider>
         <v-file-input
-          label="Image Select"
+          label="*png, *jpg, *jpeg"
           filled
           prepend-icon="mdi-camera"
           accept="image/png, image/jpeg, image/jpg"
