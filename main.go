@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	// "net/http"
 	"github.com/RichardMShaw/one_step_gps_application/packages/app_config"
@@ -20,8 +22,14 @@ func main() {
 	}
 
 	app.MongoClient = db.InitalizeConnection()
+
+	envPort := os.Getenv("PORT")
+	fmt.Println(envPort)
+	if len(envPort) == 0 {
+		envPort = "localhost:8000"
+	}
 	srv := &http.Server{
-		Addr:    "localhost:8000",
+		Addr:    envPort,
 		Handler: routes.Router(&app),
 	}
 	srv.ListenAndServe()
