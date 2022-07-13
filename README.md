@@ -2,7 +2,7 @@
 
 https://one-step-gps-richard.herokuapp.com/
 
-A proof of concept tracking devices using Google Maps.
+A proof of concept for tracking devices using Google Maps.
 
 # Technologies Used
 
@@ -18,20 +18,6 @@ A proof of concept tracking devices using Google Maps.
 - [Vuetify](https://vuetifyjs.com/en/)
 - [GoogleMapsAPI](https://developers.google.com/maps)
 - [OneStepGPS](https://www.onestepgps.com/)
-
-# Installation
-
-  cd client
-
-  npm install
-
-  npm run build
-
-  cd ..
-
-  go get -v
-
-  go run main.go
 
 # Contributers
 
