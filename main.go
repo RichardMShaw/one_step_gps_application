@@ -24,7 +24,7 @@ func main() {
 	app.MongoClient = db.InitalizeConnection()
 
 	port := os.Getenv("PORT")
-	address := fmt.Sprintf("%s:%s", "0.0.0.0", port)
+	address := fmt.Sprintf(":%s", port)
 	srv := &http.Server{
 		Addr:    address,
 		Handler: routes.Router(&app),
