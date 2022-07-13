@@ -3,7 +3,9 @@
     <tbody>
       <tr v-for="header in headers" :key="header.text">
         <td class="key-text table-data">{{ header.text }}</td>
-        <td>{{ item[header.value] }}</td>
+        <td>
+          {{ header.display ? item[header.display] : item[header.value] }}
+        </td>
       </tr>
     </tbody>
   </v-simple-table>

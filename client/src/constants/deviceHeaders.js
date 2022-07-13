@@ -21,11 +21,13 @@ const DRIVE_STATUS = {
   text: 'Drive Status',
   align: 'center',
   value: 'drive_status',
+  display: 'drive_status_display',
 }
 const DRIVE_STATUS_DURATION = {
   text: 'Status Duration',
   align: 'left',
   value: 'drive_status_duration',
+  display: 'drive_status_duration_display',
 }
 const POSITION = {
   text: 'Position',
