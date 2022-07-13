@@ -20,11 +20,15 @@ A proof of concept tracking devices using Google Maps.
 # Installation
 
   cd client
+
   npm install
+
   npm run build
 
   cd ..
+
   go get -v
+
   run main.go
 
 # Contributers
