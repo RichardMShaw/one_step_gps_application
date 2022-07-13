@@ -29,7 +29,7 @@ A proof of concept tracking devices using Google Maps.
 
   go get -v
 
-  run main.go
+  go run main.go
 
 # Contributers
 
