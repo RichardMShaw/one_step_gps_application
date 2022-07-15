@@ -89,6 +89,7 @@ export default {
       //Creates an empty div with an id to append the templateInfo element
       this.infoWindow = new InfoWindow({
         content: `<div id="${this.id}_info_id"></div>`,
+        options: { disableAutoPan: true },
       })
       this.infoWindow.open({ anchor: this.marker, map: this.map })
       this.appendToInfoWindow()
