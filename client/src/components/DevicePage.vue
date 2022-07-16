@@ -1,11 +1,19 @@
 <template>
   <v-container class="home-containter">
     <v-row class="no-margin">
-      <v-navigation-drawer dark mini-variant mini-variant-width="56" permanent>
+      <v-navigation-drawer
+        light
+        mini-variant
+        mini-variant-width="56"
+        class="nav-bar"
+        permanent
+      >
         <v-list dense nav>
           <v-list-item>
             <v-list-item-action>
-              <v-icon @click.stop="device = !device">mdi-compass</v-icon>
+              <v-icon @click.stop="device = !device" class="nav-icon">
+                mdi-compass
+              </v-icon>
             </v-list-item-action>
           </v-list-item>
         </v-list>
@@ -31,6 +39,13 @@
 .row {
   margin: 0;
   height: 100%;
+  border-right: 1px solid rgb(135, 135, 135) !important;
+}
+.nav-icon {
+  color: rgb(34, 34, 34) !important;
+}
+.nav-bar {
+  border-right: 1px solid rgb(135, 135, 135) !important;
 }
 </style>
 <script>

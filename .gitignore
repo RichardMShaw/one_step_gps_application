@@ -33,6 +33,9 @@ dist/
 
 .DS_Store
 node_modules
+nodemon.json
+package-lock.json
+package.json
 
 
 # local env files

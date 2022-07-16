@@ -23,7 +23,10 @@ func main() {
 		log.Println("Error loading .env file")
 	}
 
-	app.MongoClient = db.InitalizeConnection()
+	app.MongoClient, err = db.InitalizeConnection()
+	if err != nil {
+		log.Fatalf("Error : %s", err.Error())
+	}
 
 	port := os.Getenv("PORT")
 	address := fmt.Sprintf(":%s", port)

@@ -3,7 +3,6 @@ package db
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -18,17 +17,16 @@ import (
 )
 
 //Initalizes and returns a connection to a mongo cluster
-func InitalizeConnection() *mongo.Client {
-	var err error
-	var client *mongo.Client
+func InitalizeConnection() (*mongo.Client, error) {
 	uri := os.Getenv("MONGODB_URI")
 	opts := options.Client()
 	opts.ApplyURI(uri)
 	opts.SetMaxPoolSize(5)
-	if client, err = mongo.Connect(context.Background(), opts); err != nil {
-		fmt.Println(err.Error())
+	client, err := mongo.Connect(context.Background(), opts)
+	if err != nil {
+		return nil, err
 	}
-	return client
+	return client, nil
 }
 
 //Deletes a long file using the File ID

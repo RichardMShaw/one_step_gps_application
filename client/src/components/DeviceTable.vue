@@ -6,6 +6,7 @@
     :item-class="getRowBackground"
     :sort-by.sync="sortBy"
     :sort-desc.sync="sortDesc"
+    :loading="loading"
     @click:row="expand"
     item-key="device_id"
     hide-default-footer
@@ -17,17 +18,28 @@
           v-model="activeTab"
           :background-color="tabColor"
           center-active
-          dark
+          light
           show-arrows
+          class="filter-tabs"
         >
-          <v-tabs-slider color="yellow"></v-tabs-slider>
-          <v-tab v-for="(tab, i) in tabs" :key="i" @click="setFilter(tab)">
+          <v-tabs-slider color="blue"></v-tabs-slider>
+          <v-tab
+            v-for="(tab, i) in tabs"
+            :key="i"
+            @click="setFilter(tab)"
+            class="filter-tab"
+          >
             {{ `${tab} (${deviceStatusCount[tab]})` }}
           </v-tab>
           <v-spacer></v-spacer>
-          <v-btn height="100%" dark @click="$store.dispatch('showLayoutModel')">
+          <v-btn
+            height="100%"
+            light
+            class="layout-button"
+            @click="$store.dispatch('showLayoutModel')"
+          >
             Layout
-            <v-icon right dark>
+            <v-icon right light>
               mdi-cog
             </v-icon>
           </v-btn>
@@ -35,7 +47,9 @@
       </div>
     </template>
     <template v-slot:header.show>
-      <v-icon @click="setAllHiddenDevices">{{ eyeIcon }}</v-icon>
+      <v-icon @click="setAllHiddenDevices" class="icon-color">
+        {{ eyeIcon }}
+      </v-icon>
     </template>
     <template v-slot:item.show="{ item }">
       <td class="show-icon-td">
@@ -86,7 +100,7 @@
       </v-tooltip>
     </template>
     <template v-slot:expanded-item="{ item }">
-      <td style="padding: 0;" :colspan="headers.length">
+      <td style="padding: 0 !important;" :colspan="headers.length">
         <device-table-expanded-item :item="item" />
       </td>
     </template>
@@ -97,7 +111,8 @@
 .table-settings {
   display: flex;
   flex-direction: column;
-  max-width: calc(50% - 56px);
+  border-right: 1px solid rgb(135, 135, 135) !important;
+  max-width: calc(50% - 28px);
 }
 .table-settings > .v-data-table__wrapper {
   overflow-y: auto !important;
@@ -106,26 +121,47 @@
 }
 th {
   white-space: nowrap;
+  font-weight: bold;
+  font-size: 14px !important;
+  padding: 0 8px !important;
 }
 td {
   white-space: nowrap;
+  padding: 0 8px !important;
 }
 .driving-row {
-  background-color: #80cbc4 !important;
+  background-color: #b2dfdb !important;
 }
 .idle-row {
-  background-color: #90caf9 !important;
+  background-color: #bbdefb !important;
 }
 .stopped-row {
-  background-color: #ef9a9a !important;
+  background-color: #ffcdd2 !important;
 }
 .nosignal-row {
-  background-color: #b0bec5 !important;
+  background-color: #cfd8dc !important;
 }
 .show-icon-td {
   background-color: white;
-  border-right: rgb(56, 56, 56);
   text-align: center;
+}
+.filter-tabs {
+  border-bottom: 1px solid rgb(135, 135, 135) !important;
+}
+.filter-tab {
+  font-weight: bold !important;
+  color: rgb(34, 34, 34) !important;
+  padding: 0 8px !important;
+}
+.layout-button {
+  font-weight: bold !important;
+  color: rgb(34, 34, 34) !important;
+  background-color: rgb(223, 223, 223) !important;
+  border-radius: 0px !important;
+  border-left: 1px solid rgb(135, 135, 135) !important;
+}
+.icon-color {
+  color: rgb(34, 34, 34) !important;
 }
 </style>
 
@@ -168,11 +204,11 @@ export default {
   data: () => ({
     expanded: [],
     tabColors: {
-      ALL: 'blue-grey darken-4',
-      DRIVING: 'teal darken-4',
-      IDLE: 'blue darken-4',
-      STOPPED: 'red darken-4',
-      NOSIGNAL: 'grey darken-4',
+      ALL: 'rgb(223, 223, 223)',
+      DRIVING: 'teal lighten-4',
+      IDLE: 'blue lighten-4',
+      STOPPED: 'red lighten-4',
+      NOSIGNAL: '#cfd8dc',
     },
     sortBy: null,
     sortDesc: null,
@@ -316,6 +352,17 @@ export default {
     },
   },
   computed: {
+    loading() {
+      //Has to look at the exact references in the store to see if the value is null
+      //Getters return placeholder values when the exact value is null
+      return (
+        !this.$store.state.devices ||
+        !this.$store.state.deviceHeaderSettings ||
+        !this.$store.state.deviceSortSettings ||
+        !this.$store.state.deviceHiddenSettings ||
+        !this.$store.state.deviceFilterSettings
+      )
+    },
     headers() {
       return this.$store.getters.deviceHeadersFiltered
     },
@@ -332,10 +379,7 @@ export default {
       return this.$store.getters.deviceSortSettings
     },
     hiddenSettings() {
-      //If hidden settings haven't been fetched, default to an empty object to prevent errors
       return this.$store.getters.deviceHiddenSettings
-        ? this.$store.getters.deviceHiddenSettings
-        : {}
     },
     deviceIcons() {
       return this.$store.getters.deviceIcons

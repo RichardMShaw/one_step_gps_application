@@ -69,7 +69,11 @@ func deviceFilterSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			//Insert a new if not saved before
 			newItem.CreatedAt = time.Now()
 			newItem.UpdatedAt = newItem.CreatedAt
-			collection.InsertOne(ctx, newItem)
+			_, err = collection.InsertOne(ctx, newItem)
+			if err != nil {
+				http.Error(w, "Failed to Insert Data", http.StatusInternalServerError)
+				return
+			}
 		} else if err != nil {
 			http.Error(w, "Failed to Save Data", http.StatusInternalServerError)
 			return

@@ -3,6 +3,7 @@ package routes
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 
@@ -15,7 +16,8 @@ func deviceRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 	client := &http.Client{}
 	req, err := http.NewRequest(http.MethodGet, "https://track.onestepgps.com/v3/api/public/device?latest_point=true", nil)
 	if err != nil {
-		fmt.Printf("Error : %s", err)
+		log.Fatalf("Error : %s", err.Error())
+		return
 	}
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", key))

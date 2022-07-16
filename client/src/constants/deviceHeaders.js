@@ -133,12 +133,9 @@ const DEFAULT_DEVICE_HEADER_SETTINGS = {
   show: true,
   icon: true,
   display_name: true,
-  model: true,
-  odometer_mi_display: true,
   speed_mph: true,
   drive_status: true,
   drive_status_duration: true,
-  rssi: true,
   active_state: true,
 }
 

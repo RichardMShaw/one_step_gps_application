@@ -3,7 +3,7 @@
     <v-sheet
       color="white"
       elevation="1"
-      class="card-padding"
+      class="modal-sheet"
       outlined
       rounded
       shaped
@@ -53,7 +53,8 @@
 </template>
 
 <style scoped>
-.card-padding {
+.modal-sheet {
+  width: 60vw;
   padding: 1rem;
 }
 .text-center {
@@ -61,6 +62,7 @@
 }
 .flex {
   display: flex;
+  flex-wrap: wrap;
 }
 .model-button {
   margin-left: 0.5rem;

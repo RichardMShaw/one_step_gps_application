@@ -22,7 +22,7 @@ export default new Vuex.Store({
     layoutModel: false,
     deviceIcons: {},
     deviceIconModel: { device: null, show: false },
-    devices: [],
+    devices: null,
 
     deviceHeaderSettings: null,
     deviceSortSettings: null,
@@ -47,22 +47,25 @@ export default new Vuex.Store({
     },
     deviceSortSettings(state) {
       return state.deviceSortSettings
+        ? state.deviceSortSettings
+        : { sort_by: undefined, sort_desc: undefined }
     },
     deviceHiddenSettings(state) {
-      return state.deviceHiddenSettings
+      return state.deviceHiddenSettings ? state.deviceHiddenSettings : {}
     },
     devices(state) {
-      return state.devices
+      return state.devices ? state.devices : []
     },
     deviceStatusFilter(state) {
-      return state.deviceFilterSettings
+      return state.deviceFilterSettings ? state.deviceFilterSettings : 'ALL'
     },
-    devicesFilterByStatus(state) {
-      let status = state.deviceFilterSettings
+    devicesFilterByStatus(state, getters) {
+      let status = getters.deviceStatusFilter
+      let devices = getters.devices
       if (!status || status == 'ALL') {
-        return state.devices
+        return getters.devices
       }
-      return state.devices.filter((item) => item.drive_status == status)
+      return devices.filter((item) => item.drive_status == status)
     },
     devicesFilterByStatusAndHidden(state, getters) {
       let filteredDevices = getters.devicesFilterByStatus
@@ -77,6 +80,8 @@ export default new Vuex.Store({
     },
     deviceHeaderSettings(state) {
       return state.deviceHeaderSettings
+        ? state.deviceHeaderSettings
+        : JSON.parse(JSON.stringify(DEFAULT_DEVICE_HEADER_SETTINGS))
     },
     deviceHeadersFiltered(state) {
       if (!state.deviceHeaderSettings) {
