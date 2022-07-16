@@ -28,40 +28,52 @@ export default {
   },
 
   data() {
-    return {}
+    return {
+      mapConfig: {
+        ...mapSettings,
+        mapTypeId: this.$store.getters.mapTypeId,
+        center: this.getCenter(),
+      },
+    }
   },
 
   mounted() {},
+
+  methods: {
+    getCenter() {
+      let latLng = { lat: 0, lng: 0 }
+      if (!this.devices.length) {
+        return latLng
+      }
+      let firstDevice = this.devices[0]
+
+      let smallestLat = firstDevice.lat
+      let largestLat = firstDevice.lat
+
+      let smallestLng = firstDevice.lng
+      let largestLng = firstDevice.lng
+      this.devices.forEach((item) => {
+        smallestLat = item.lat < smallestLat ? item.lat : smallestLat
+        smallestLng = item.lng < smallestLng ? item.lng : smallestLng
+
+        largestLat = item.lat > largestLat ? item.lat : largestLat
+        largestLng = item.lng > largestLng ? item.lng : largestLng
+      })
+      let latDiff = largestLat - smallestLat
+      let lngDiff = largestLng - smallestLng
+      latLng.lat = smallestLat + latDiff / 2
+      latLng.lng = smallestLng + lngDiff / 2
+
+      return latLng
+    },
+  },
 
   computed: {
     markerCluster() {
       return this.$store.getters.markerCluster
     },
-    mapTypeId() {
-      return this.$store.getters.mapTypeId
-    },
     api() {
       return GOOGLE_MAPS_KEY
-    },
-    mapConfig() {
-      return {
-        ...mapSettings,
-        mapTypeId: this.mapTypeId,
-        center: this.mapCenter,
-      }
-    },
-    mapCenter() {
-      let latLng = { lat: 0, lng: 0 }
-      if (!this.devices.length) {
-        return latLng
-      }
-      this.devices.forEach((item) => {
-        latLng.lat += item.lat
-        latLng.lng += item.lng
-      })
-      latLng.lat /= this.devices.length
-      latLng.lng /= this.devices.length
-      return latLng
     },
   },
 }

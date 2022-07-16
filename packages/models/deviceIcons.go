@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+//Used when saving or retreiving data from Mongo Cluster
 type DeviceIcon struct {
 	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	FileID    primitive.ObjectID `json:"file_id" bson:"file_id,omitempty"`

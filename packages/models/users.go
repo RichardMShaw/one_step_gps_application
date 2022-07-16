@@ -4,6 +4,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+//Used when saving or retreiving data from Mongo Cluster
 type User struct {
 	ID        primitive.ObjectID  `json:"id" bson:"_id"`
 	Email     string              `json:"email" bson:"email"`

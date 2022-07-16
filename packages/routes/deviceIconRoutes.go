@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/RichardMShaw/one_step_gps_application/packages/app_config"
 	"github.com/RichardMShaw/one_step_gps_application/packages/db"
 	"github.com/RichardMShaw/one_step_gps_application/packages/models"
 	"github.com/go-chi/chi/v5"
@@ -14,8 +13,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
-	client := app.MongoClient
+func (repo *Repository) deviceIconRoutes() {
+	app := repo.App
+	mux := app.Mux
+	client := repo.App.MongoClient
 	database := client.Database("onestepgps")
 	collection := database.Collection("deviceicons")
 
@@ -31,6 +32,9 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 
 		if err == mongo.ErrNoDocuments {
 			w.WriteHeader(http.StatusNoContent)
+			return
+		} else if err != nil {
+			http.Error(w, "Failed to Decode Device", http.StatusInternalServerError)
 			return
 		}
 
@@ -84,9 +88,14 @@ func deviceIconRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		}, bson.M{"$currentDate": bson.M{"updated_at": true}, "$set": newItem}).Decode(&oldItem)
 
 		if err == mongo.ErrNoDocuments {
+			//Insert new data if not saved before
 			newItem.CreatedAt = time.Now()
 			newItem.UpdatedAt = newItem.CreatedAt
-			collection.InsertOne(ctx, newItem)
+			_, err = collection.InsertOne(ctx, newItem)
+			if err != nil {
+				http.Error(w, "Failed to Insert Data", http.StatusInternalServerError)
+				return
+			}
 		} else if err != nil {
 			http.Error(w, "Failed to Save Data", http.StatusInternalServerError)
 			return

@@ -10,7 +10,7 @@ const mapSettings = {
   zoomControlOptions: {
     style: 'SMALL',
   },
-  zoom: 8,
+  zoom: 9,
 }
 
 export { mapSettings, GOOGLE_MAPS_KEY }

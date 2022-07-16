@@ -112,7 +112,7 @@
   display: flex;
   flex-direction: column;
   border-right: 1px solid rgb(135, 135, 135) !important;
-  max-width: calc(50% - 28px);
+  max-width: calc(60% - 28px);
 }
 .table-settings > .v-data-table__wrapper {
   overflow-y: auto !important;

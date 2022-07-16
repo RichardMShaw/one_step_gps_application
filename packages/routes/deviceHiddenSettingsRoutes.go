@@ -6,25 +6,23 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/RichardMShaw/one_step_gps_application/packages/app_config"
 	"github.com/RichardMShaw/one_step_gps_application/packages/models"
-	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func deviceHiddenSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
+func (repo *Repository) deviceHiddenSettingsRoutes() {
+	app := repo.App
+	mux := app.Mux
 	client := app.MongoClient
 	database := client.Database("onestepgps")
 	collection := database.Collection("devicehiddensettings")
 
 	//User ID is currently stored in an ENV value for the sake of proof of concept
 	//Would be replaced with proper user authentication and management in further development
-	user_id, _ := primitive.ObjectIDFromHex(os.Getenv("USER_ID"))
+	user_id := app.DevUserID
 
 	mux.Get("/api/device-hidden-settings", func(w http.ResponseWriter, r *http.Request) {
 		var item models.DeviceHiddenSettings
@@ -64,7 +62,7 @@ func deviceHiddenSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 		}
 
 		var f models.DeviceHiddenSettingsFormData
-		json.Unmarshal(body, &f)
+		err = json.Unmarshal(body, &f)
 
 		if err != nil {
 			http.Error(w, "Failed to Read", http.StatusBadRequest)
@@ -83,10 +81,14 @@ func deviceHiddenSettingsRoutes(mux *chi.Mux, app *app_config.AppConfig) {
 			"user_id": user_id,
 		}, bson.M{"$currentDate": bson.M{"updated_at": true}, "$set": newItem}).Decode(&oldItem)
 		if err == mongo.ErrNoDocuments {
-			//Insert a new if not saved before
+			//Insert new data if not saved before
 			newItem.CreatedAt = time.Now()
 			newItem.UpdatedAt = newItem.CreatedAt
-			collection.InsertOne(ctx, newItem)
+			_, err = collection.InsertOne(ctx, newItem)
+			if err != nil {
+				http.Error(w, "Failed to Insert Data", http.StatusInternalServerError)
+				return
+			}
 		} else if err != nil {
 			fmt.Println(err)
 			http.Error(w, "Failed to Save Data", http.StatusInternalServerError)

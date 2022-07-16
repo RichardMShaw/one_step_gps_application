@@ -29,7 +29,7 @@ func InitalizeConnection() (*mongo.Client, error) {
 	return client, nil
 }
 
-//Deletes a long file using the File ID
+//Deletes a file using the File ID
 func DeleteFile(conn *mongo.Client, file_id primitive.ObjectID, database string) error {
 	bucket, err := gridfs.NewBucket(
 		conn.Database(database),

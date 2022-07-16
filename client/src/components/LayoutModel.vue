@@ -8,8 +8,15 @@
       rounded
       shaped
       @click.stop
+      light
     >
-      <h1 class="black-text">Layout Settings</h1>
+      <div class="modal-header-row">
+        <h1 class="black-text">Layout Settings</h1>
+        <v-spacer></v-spacer>
+        <p class="count-text">
+          {{ `Active Headers: ${shownHeadersCount}/7` }}
+        </p>
+      </div>
       <v-divider class="border-color"></v-divider>
       <div class="flex">
         <v-chip
@@ -20,6 +27,7 @@
           :text-color="textColor(header)"
           @click="changeHeader(header.value)"
           ripple
+          :disabled="isDisabled(header.value)"
         >
           {{ header.text }}
         </v-chip>
@@ -74,6 +82,17 @@
 .black-text {
   color: black;
 }
+.modal-header-row {
+  display: flex;
+  flex-direction: row;
+}
+.count-text {
+  font-weight: bold;
+  font-size: 16px;
+  color: black;
+  margin-top: auto;
+  margin-bottom: 0;
+}
 </style>
 
 <script>
@@ -116,10 +135,27 @@ export default {
       this.$store.dispatch('setDefaultDeviceHeaderSettings')
       this.deviceHeaders = this.$store.getters.deviceHeaderSettings
     },
+    isDisabled(key) {
+      let value = this.deviceHeaders[key]
+      return !value && this.disableChips
+    },
   },
   computed: {
     allHeaders() {
       return ALL_DEVICE_HEADERS
+    },
+    shownHeadersCount() {
+      let count = 0
+      let entries = Object.entries(this.deviceHeaders)
+      entries.forEach((entry) => {
+        if (entry[1]) {
+          count++
+        }
+      })
+      return count
+    },
+    disableChips() {
+      return this.shownHeadersCount > 6
     },
   },
   mounted() {
